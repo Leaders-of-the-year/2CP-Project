@@ -4,7 +4,8 @@ import Image from 'next/image';
 export default function Home() {
   const items=[{text:"Free Online Doctor Consultations"},{text:"Accessible Healthcare for All"},{text:"Confidential and Secure"},]
   return (
-    <div className="pl-[104px] flex flex-row items-center justify-center w-full h-full my-16">
+    <div className='my-16 pl-[104px] flex flex-col h-full w-full space-y-[64px]'>
+    <div className=" flex flex-row items-center justify-center w-full h-full ">
       <div className="justify-start flex flex-col w-1/2 h-[80vh] space-y-10">
         <h1 className='text-[42px] font-bold self-stretch'>
           Trusted care from top doctors, just a tap away
@@ -29,7 +30,11 @@ export default function Home() {
       <div className="justify-end w-1/2 h-[80vh] border-inherit  rounded-bl-[64px] bg-custom-gradient">
         <Image alt='' src="laptop.svg" className='w-[922px] h-[383px]' width={922} height={383}/>
       </div>
+      
     </div>
-
+    <p className='text-[32px]'>
+    Our mission is simple: to connect you with licensed medical professionals who care about your health and well-being, all for free. We believe that access to medical advice should be a right, not a privilege, and we are here to bridge the gap between you and quality healthcare.
+    </p>
+    </div>
   );
 }
