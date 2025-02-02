@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from 'next/font/local'
 import "@/app/styles/globals.css";
 import Header from "@/app/header";
+import { FooterLandingPage } from "./footer";
 const sans = localFont({
   src: "../fonts/SF-Pro.ttf",
   display: "swap",
@@ -28,6 +29,7 @@ export default function RootLayout({
       >
         <Header/>
         {children}
+        <FooterLandingPage/>
       </body>
     </html>
   );
