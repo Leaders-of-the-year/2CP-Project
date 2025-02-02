@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import localFont from 'next/font/local'
+import "@/app/styles/globals.css";
+import Header from "@/app/header";
+const font = localFont({
+  src: "../fonts/SF-Pro.ttf",
+  display: "swap",
+  variable: "--font-my-font",
+
+});
+
+
+
+export const metadata: Metadata = {
+  title: "Medical",
+  description: "Welcome ",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${font.className} antialiased`}
+      >
+        <Header/>
+        {children}
+      </body>
+    </html>
+  );
+}
