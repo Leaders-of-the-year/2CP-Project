@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import localFont from 'next/font/local'
 import "@/app/styles/globals.css";
 import Header from "@/app/header";
-const font = localFont({
+const sans = localFont({
   src: "../fonts/SF-Pro.ttf",
   display: "swap",
-  variable: "--font-my-font",
+  variable: "--font-sans",
 
 });
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${font.className} antialiased`}
+        className={`${sans.className} antialiased`}
       >
         <Header/>
         {children}

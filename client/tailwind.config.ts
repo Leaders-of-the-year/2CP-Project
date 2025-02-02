@@ -8,8 +8,14 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-  	extend: {
+  	extend: {fontFamily: {
+        sans: "var(--font-sans)",
+      },
   		colors: {
+			main: "hsl(205, 18%, 27%)",  
+        second: "hsl(195, 25%, 65%)", 
+        alt: "hsl(0, 0%, 96%)",  
+        night: "hsl(0, 0%, 0%)",
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -21,7 +27,7 @@ export default {
   				foreground: 'hsl(var(--popover-foreground))'
   			},
   			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
+  				DEFAULT: 'hsl(var(--main))',
   				foreground: 'hsl(var(--primary-foreground))'
   			},
   			secondary: {
@@ -58,5 +64,6 @@ export default {
   		}
   	}
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

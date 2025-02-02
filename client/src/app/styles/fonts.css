@@ -1,97 +1,10 @@
+@font-face {
+  font-family: "SF Pro";
+  src: url("../../fonts/SF-Pro.ttf") format("truetype"); 
+  font-display: swap;
+  font-weight: 100 900;
+}
 
 :root {
-    /* Font family */
-    --font-primary: 'SF Pro', sans-serif;
-  
-    /* Text sizes */
-    --font-size-sf-pro: 18px;
-    --line-height-sf-pro: 20px;
-  
-    --font-size-sf-underlined: 18px;
-    --line-height-sf-underlined: 20px;
-  
-    --font-size-sf-semibold: 24px;
-    --line-height-sf-semibold: 20px;
-  
-    /* Headings */
-    --font-size-h1: 72px;
-    --line-height-h1: auto;
-  
-    --font-size-h2: 56px;
-    --line-height-h2: auto;
-  
-    --font-size-h3: 42px;
-    --line-height-h3: auto;
-  
-    --font-size-h4: 32px;
-    --line-height-h4: auto;
-  
-    --font-size-h5: 24px;
-    --line-height-h5: auto;
-  
-    --font-size-h6: 16px;
-    --line-height-h6: auto;
-  
-    /* Additional sizes */
-    --font-size-ssmall: 12px;
-    --line-height-ssmall: auto;
-  
-    --font-size-tsmall: 18px;
-    --line-height-tsmall: auto;
-  
-    --font-size-small: 24px;
-    --line-height-small: auto;
-  
-    --font-size-medium: 32px;
-    --line-height-medium: auto;
-  
-    --font-size-large: 40px;
-    --line-height-large: auto;
-  
-    --font-size-xlarge: 56px;
-    --line-height-xlarge: auto;
-  
-    --font-size-xxlarge: 72px;
-    --line-height-xxlarge: auto;
-  }
-  
-  .sf-pro {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-sf-pro);
-    line-height: var(--line-height-sf-pro);
-  }
-  
-  .sf-underlined {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-sf-underlined);
-    line-height: var(--line-height-sf-underlined);
-    text-decoration: underline;
-  }
-  
-  .sf-semibold {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-sf-semibold);
-    line-height: var(--line-height-sf-semibold);
-    font-weight: 600; /* Semibold */
-  }
-  
-  /* Headings */
-  h1 {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-h1);
-    line-height: var(--line-height-h1);
-  }
-  
-  h2 {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-h2);
-    line-height: var(--line-height-h2);
-  }
-  
-  h3 {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-h3);
-    line-height: var(--line-height-h3);
-  }
-  
-  
+  --font-sans: "SF Pro", sans-serif;
+}
