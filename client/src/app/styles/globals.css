@@ -87,4 +87,12 @@ font-style: normal;
 font-weight: 700;
 line-height: 20px; 
 }
+.h3{
+text-align: center;
+font-family: "SF Pro";
+font-size: 42px;
+font-style: normal;
+font-weight: 590;
+line-height: normal;
+}
 }
