@@ -18,7 +18,7 @@ export default function Home() {
         {(items.map((item,index) => {
             return  <p key={index} className='medium py-2'>
             <span className='inline-block px-4'><svg width="31" height="23" viewBox="0 0 31 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.25 11.5L8.25 20L29.75 2" stroke="black" stroke-width="3" />
+            <path d="M1.25 11.5L8.25 20L29.75 2" stroke="black" strokeWidth="3" />
           </svg></span>
           {item.text}
           </p>
