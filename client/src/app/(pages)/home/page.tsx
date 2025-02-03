@@ -4,7 +4,7 @@ import Image from 'next/image';
 export default function Home() {
   const items=[{text:"Free Online Doctor Consultations"},{text:"Accessible Healthcare for All"},{text:"Confidential and Secure"},]
   return (
-    <section className='bg-alt'>
+    <section className='bg-alt text-main'>
     <div className=' pl-[104px] flex flex-col h-full w-full space-y-[64px] pb-24'>
     <div className=" flex flex-row items-center justify-center w-full h-full  ">
       <div className="justify-start flex flex-col w-1/2 h-[80vh] space-y-10 py-24">
