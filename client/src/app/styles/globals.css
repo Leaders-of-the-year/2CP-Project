@@ -7,11 +7,10 @@
 @layer base {
   :root {
     /* Main colors */
-    --main: 55 18% 27%;  /* Converted from rgba(55, 75, 82, 1) */
-    --secondary: "#96AFB8";  /* Converted from rgba(150, 175, 184, 1) */
-    --alt: 0 0% 96%;  /* Converted from rgba(244, 244, 244, 1) */
-    --black: 0 0% 0%;  /* Converted from rgba(0, 0, 0, 1) */
-
+    --main: 55 18% 27%;  
+    --secondary: "#96AFB8";
+    --alt: 0 0% 96%;  
+    --black: 0 0% 0%;  
     /* Background and foreground */
     
     
@@ -20,11 +19,11 @@
     --main:var(--main);
     --card: var(--alt);
     --card-foreground: var(--black);
-    --popover: var(--alt);
     --popover-foreground: var(--black);
 
     --primary: var(--main);
     --primary-foreground: var(--alt);
+    --popover: var(--alt);
 
     --secondary: var(--secondary);
     --secondary-foreground: var(--black);
@@ -47,12 +46,11 @@
     @apply bg-background ;
   }
 }
+
 @layer utilities {
   .bg-custom-gradient {
     background: linear-gradient(0deg, #96AFB8 0.9%, #FFF 100%);
   }
-
-
 
 .h1{font-family: "SF Pro";
 font-size: 72px;
@@ -67,10 +65,10 @@ font-weight: 400;
 line-height: normal;
 }
 .medium{
+  font-weight: 400;
 font-family: "SF Pro";
 font-size: 32px;
 font-style: normal;
-font-weight: 400;
 line-height: normal;
 }
 .h5{
@@ -90,4 +88,3 @@ font-weight: 700;
 line-height: 20px; 
 }
 }
-/* TODO: PUT UTILS IN ANOTHER FILE */

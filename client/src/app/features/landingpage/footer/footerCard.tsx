@@ -9,7 +9,7 @@ interface FooterCardProps {
     title:string,subtitles:Array<string>
 }
 const FooterCard=({title,subtitles}:FooterCardProps)=>{
-    return <Card className="bg-inherit w-full border-none text-alt">
+    return <Card className="bg-main w-full border-none text-alt">
     <CardHeader>
       <CardTitle>{title}</CardTitle>
     </CardHeader>

@@ -1,5 +1,5 @@
-import { FooterLandingPage } from "@/app/footer";
-import Header from "@/app/header";
+import { FooterLandingPage } from "@/app/features/landingpage/footer/footer";
+import Header from "@/app/features/landingpage/header/header";
 export default function RootLayout({
   children,
 }: Readonly<{

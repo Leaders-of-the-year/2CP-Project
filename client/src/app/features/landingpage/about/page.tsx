@@ -11,7 +11,7 @@ export default function About() {
     </div>
     <div className="flex flex-row items-center justify-center gap-[44px]  ">
     {items.map((item, index) => {
-      return <AboutCard className="h-[550px]  w-[550px]" key={index} width={100} height={100} title={item.title} icon={item.icon} text={item.text} />;
+      return <AboutCard className="h-[550px]  w-[550px] bg-alt" key={index} width={100} height={100} title={item.title} icon={item.icon} text={item.text} />;
     })}
 
     </div>

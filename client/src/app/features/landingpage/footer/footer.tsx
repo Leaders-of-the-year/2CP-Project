@@ -1,6 +1,6 @@
 import FooterCard from "./footerCard";
 import { Separator } from "@/components/ui/separator";
-export const FooterLandingPage=()=>{
+export const FooterLandingPage = () => {
     const footerItems = [
         {
             title: "About Us",
@@ -28,10 +28,11 @@ export const FooterLandingPage=()=>{
                     <FooterCard key={index} title={item.title} subtitles={item.subtitles} />
                 ))}
             </div>
-            <Separator />
-            <div className="flex flex-row justify-end">
-            <p className="justify-end   ">© 2025 [Website Name]. All Rights Reserved</p>
+            <Separator className=" bg-alt/80 my-4" />
+            <div className="flex   justify-end w-full my-4">
+                <p >© 2025 [Website Name]. All Rights Reserved</p>
             </div>
         </footer>
     );
 }
+export default FooterLandingPage;

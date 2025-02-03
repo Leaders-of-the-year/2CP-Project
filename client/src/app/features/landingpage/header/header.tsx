@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 export const Header = () => {
     const pathname=usePathname();
-    const items = [{ name: "Home", alt: "/home" }, { name: "Services", alt: "/services" }, { name: "About us", alt: "/about" }, { name: "TopDoctors", alt: "/top-doctors" },]
-    return <nav className="flex flex-row justify-between  px-12 py-3 items-center  h-20 border-b border-black">
+    const items = [{ name: "Home", alt: "/home" }, { name: "Services", alt: "/services" }, { name: "About us", alt: "/about" }, { name: "Top Doctors", alt: "/top-doctors" },]
+    return <nav className="flex flex-row justify-between fixed w-full px-12 py-3 items-center bg-alt bg-opacity-50   h-20 border-b border-main">
         <div className="pl-48">
             <Image  src="logo.svg" alt="" width={61.09} height={58.396}></Image>
         </div>

@@ -1,15 +1,42 @@
-/* @layer utilities {
-    .bg-custom-gradient {
-      background: linear-gradient(0deg, #96AFB8 0.9%, #FFF 100%);
-    }
-  
-  
-  
-  .h1{font-family: "SF Pro";
-  font-size: 72px;
-  font-style: normal;
-  font-weight: 590;
-  line-height: normal;}
+/* 
+@layer utilities {
+  .bg-custom-gradient {
+    background: linear-gradient(0deg, #96AFB8 0.9%, #FFF 100%);
   }
-   */
-   
+
+.h1{font-family: "SF Pro";
+font-size: 72px;
+font-style: normal;
+font-weight: 590;
+line-height: normal;}
+.large{
+font-family: "SF Pro";
+font-size: 40px;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
+}
+.medium{
+  font-weight: 400;
+font-family: "SF Pro";
+font-size: 32px;
+font-style: normal;
+line-height: normal;
+}
+.h5{
+  font-family: "SF Pro";
+font-size: 24px;
+font-style: normal;
+font-weight: 590;
+line-height: normal;
+}
+.buttonL{
+text-align: center;
+font-feature-settings: 'liga' off, 'clig' off;
+font-family: "SF Pro";
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 20px; 
+}
+} */
