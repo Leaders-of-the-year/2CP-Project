@@ -12,9 +12,9 @@ export default {
         sans: "var(--font-sans)",
       },
   		colors: {
-			main: "hsl(205, 18%, 27%)",  
-        second: "hsl(195, 25%, 65%)", 
-        alt: "hsl(0, 0%, 96%)",  
+			main: "rgba(55, 75, 82, 1)",  
+        second: "rgba(150, 175, 184, 1)", 
+        alt: "rgba(244, 244, 244, 1)",  
         night: "hsl(0, 0%, 0%)",
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

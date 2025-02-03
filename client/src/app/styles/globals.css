@@ -1,4 +1,5 @@
 @import 'fonts.css';
+@import "utils.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +8,7 @@
   :root {
     /* Main colors */
     --main: 55 18% 27%;  /* Converted from rgba(55, 75, 82, 1) */
-    --secondary: 195 25% 65%;  /* Converted from rgba(150, 175, 184, 1) */
+    --secondary: "#96AFB8";  /* Converted from rgba(150, 175, 184, 1) */
     --alt: 0 0% 96%;  /* Converted from rgba(244, 244, 244, 1) */
     --black: 0 0% 0%;  /* Converted from rgba(0, 0, 0, 1) */
 
@@ -43,11 +44,50 @@
     @apply  border-main font-sans;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background ;
   }
 }
 @layer utilities {
   .bg-custom-gradient {
     background: linear-gradient(0deg, #96AFB8 0.9%, #FFF 100%);
   }
+
+
+
+.h1{font-family: "SF Pro";
+font-size: 72px;
+font-style: normal;
+font-weight: 590;
+line-height: normal;}
+.large{
+font-family: "SF Pro";
+font-size: 40px;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
 }
+.medium{
+font-family: "SF Pro";
+font-size: 32px;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
+}
+.h5{
+  font-family: "SF Pro";
+font-size: 24px;
+font-style: normal;
+font-weight: 590;
+line-height: normal;
+}
+.buttonL{
+text-align: center;
+font-feature-settings: 'liga' off, 'clig' off;
+font-family: "SF Pro";
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 20px; 
+}
+}
+/* TODO: PUT UTILS IN ANOTHER FILE */

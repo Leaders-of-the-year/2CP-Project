@@ -20,12 +20,11 @@ export const FooterLandingPage=()=>{
         }
     ];
 
-    const shuffledFooterItems = footerItems.sort(() => Math.random() - 0.5);
 
     return (
         <footer className="flex flex-col bg-main w-full items-center justify-center px-24 text-alt">
             <div className="flex flex-row space-x-6 gap-[30px] w-full items-center justify-around">
-                {shuffledFooterItems.map((item, index) => (
+                {footerItems.map((item, index) => (
                     <FooterCard key={index} title={item.title} subtitles={item.subtitles} />
                 ))}
             </div>
