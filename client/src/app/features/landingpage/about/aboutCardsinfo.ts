@@ -1,0 +1,4 @@
+export   const items=[{title:"Urgent Consultation",icon:"urgent.svg",text:"Need immediate medical attention? Connect with a doctor instantly for urgent health concerns. Get quick advice, prescriptions, and guidance in critical situations."}
+    ,{title:"Scheduled Consultation",icon:"calendar.svg",text:"Plan your health checkup at your convenience. Book an appointment with a doctor for a detailed and personalized consultation at a time that suits you."},
+    {title:"Regular Consultation",icon:"doctor.svg",text:"For ongoing care and follow-ups, stay in touch with your doctor. Discuss your progress, get advice, and manage your health seamlessly over video calls."},]
+  

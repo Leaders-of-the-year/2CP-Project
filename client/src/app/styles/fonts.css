@@ -1,0 +1,10 @@
+@font-face {
+  font-family: "SF Pro";
+  src: url("../../fonts/SF-Pro.ttf") format("truetype"); 
+  font-display: swap;
+  font-weight: 100 900;
+}
+
+:root {
+  --font-sans: "SF Pro", sans-serif;
+}
