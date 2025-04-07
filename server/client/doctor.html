@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Dashboard</title>
+</head>
+<body>
+  <h1>Doctor Dashboard</h1>
+  <div id="status">Waiting for patients...</div>
+  <button id="acceptBtn" style="display:none;">Accept Patient</button>
+  <video id="localVideo" autoplay muted></video>
+  <video id="remoteVideo" autoplay></video>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="doctor.js"></script>
+</body>
+</html>
