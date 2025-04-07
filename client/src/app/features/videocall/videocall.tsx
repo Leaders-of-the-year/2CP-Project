@@ -4,21 +4,27 @@ import { useState, useRef, useEffect } from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Camera, Maximize2, Mic, PhoneOff, Plus, Settings, FileText } from "lucide-react"
+import { io, type Socket } from "socket.io-client"
 
-export default function VideoCall() {
+type UserRole = "doctor" | "patient"
+
+export default function VideoCall({ role = "doctor" }: { role?: UserRole }) {
   const [isMuted, setIsMuted] = useState(false)
   const [isVideoOn, setIsVideoOn] = useState(true)
-  const [isCallActive, setIsCallActive] = useState(true)
+  const [isCallActive, setIsCallActive] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [status, setStatus] = useState<string>(role === "doctor" ? "Waiting for patients..." : "Requesting doctor...")
+  const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  const socketRef = useRef<Socket | null>(null)
 
-  // Initialize WebRTC
+  // Initialize media and socket connection
   useEffect(() => {
-    const initWebRTC = async () => {
+    const initMedia = async () => {
       try {
         // Get local media stream
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -32,38 +38,26 @@ export default function VideoCall() {
           localVideoRef.current.srcObject = stream
         }
 
-        // Create peer connection
-        const configuration = {
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        }
-        const peerConnection = new RTCPeerConnection(configuration)
-        peerConnectionRef.current = peerConnection
+        // Initialize socket connection
+        const socket = io("http://localhost:3000")
+        socketRef.current = socket
 
-        // Add local tracks to the peer connection
-        stream.getTracks().forEach((track) => {
-          if (peerConnectionRef.current) {
-            peerConnectionRef.current.addTrack(track, stream)
-          }
-        })
-
-        // Handle incoming remote tracks
-        peerConnection.ontrack = (event) => {
-          if (remoteVideoRef.current && event.streams[0]) {
-            remoteVideoRef.current.srcObject = event.streams[0]
-          }
+        // Register as doctor or patient
+        if (role === "doctor") {
+          socket.emit("register-doctor")
+        } else {
+          socket.emit("request-call")
         }
 
-        // For demo purposes, we'll simulate a remote connection
-        // In a real app, you would implement signaling with a server
-        simulateRemoteConnection()
+        // Set up socket event listeners
+        setupSocketListeners(socket)
       } catch (error) {
         console.error("Error accessing media devices:", error)
+        setStatus("Error accessing camera/microphone")
       }
     }
 
-    if (isCallActive) {
-      initWebRTC()
-    }
+    initMedia()
 
     // Cleanup function
     return () => {
@@ -74,35 +68,104 @@ export default function VideoCall() {
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close()
       }
+
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+      }
     }
-  }, [isCallActive, isVideoOn])
+  }, [role])
 
-  // Simulate a remote connection for demo purposes
-  const simulateRemoteConnection = async () => {
-    if (!peerConnectionRef.current) return
+  // Set up socket event listeners
+  const setupSocketListeners = (socket: Socket) => {
+    // For doctors: notification when a patient is waiting
+    socket.on("patient-waiting", (patientId: string) => {
+      setWaitingPatientId(patientId)
+      setStatus("Patient waiting...")
+    })
 
-    try {
-      // Create and set local description
-      const offer = await peerConnectionRef.current.createOffer()
-      await peerConnectionRef.current.setLocalDescription(offer)
+    // For both: when a call is accepted
+    socket.on("call-accepted", (remoteId: string) => {
+      setIsCallActive(true)
+      setStatus(`Connected to ${role === "doctor" ? "patient" : "doctor"}`)
+      createPeerConnection(remoteId, role === "doctor")
+    })
 
-      // In a real app, you would send this offer to the remote peer via a signaling server
-      console.log("Local offer created:", offer)
+    // Handle WebRTC signaling
+    socket.on("offer", async ({ offer, from }: { offer: RTCSessionDescriptionInit; from: string }) => {
+      if (!peerConnectionRef.current) {
+        createPeerConnection(from, false)
+      }
 
-      // Simulate receiving an answer from the remote peer
-      setTimeout(async () => {
-        if (!peerConnectionRef.current) return
+      await peerConnectionRef.current!.setRemoteDescription(new RTCSessionDescription(offer))
+      const answer = await peerConnectionRef.current!.createAnswer()
+      await peerConnectionRef.current!.setLocalDescription(answer)
+      socket.emit("answer", { answer, to: from })
+    })
 
-        // For demo, we'll use a loopback (this wouldn't work in production)
-        // This is just to show how the flow would work
-        const answer = await peerConnectionRef.current.createAnswer()
-        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer))
-        await peerConnectionRef.current.setLocalDescription(answer)
+    socket.on("answer", ({ answer }: { answer: RTCSessionDescriptionInit }) => {
+      peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(answer))
+    })
 
-        console.log("Remote answer simulated")
-      }, 1000)
-    } catch (error) {
-      console.error("Error creating offer:", error)
+    socket.on("ice-candidate", ({ candidate }: { candidate: RTCIceCandidateInit }) => {
+      peerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(candidate))
+    })
+
+    socket.on("call-ended", () => {
+      endCall()
+    })
+  }
+
+  // Create WebRTC peer connection
+  const createPeerConnection = (remoteId: string, isInitiator: boolean) => {
+    const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] }
+    const peerConnection = new RTCPeerConnection(config)
+    peerConnectionRef.current = peerConnection
+
+    // Add local tracks to the peer connection
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => {
+        if (localStreamRef.current) {
+          peerConnection.addTrack(track, localStreamRef.current)
+        }
+      })
+    }
+
+    // Handle ICE candidates
+    peerConnection.onicecandidate = ({ candidate }) => {
+      if (candidate && socketRef.current) {
+        socketRef.current.emit("ice-candidate", { candidate, to: remoteId })
+      }
+    }
+
+    // Handle incoming tracks
+    peerConnection.ontrack = ({ streams }) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = streams[0]
+      }
+    }
+
+    // If we're the initiator (doctor), create and send an offer
+    if (isInitiator) {
+      peerConnection
+        .createOffer()
+        .then((offer) => peerConnection.setLocalDescription(offer))
+        .then(() => {
+          if (socketRef.current) {
+            socketRef.current.emit("offer", {
+              offer: peerConnection.localDescription,
+              to: remoteId,
+            })
+          }
+        })
+        .catch((err) => console.error("Error creating offer:", err))
+    }
+  }
+
+  // Accept waiting patient (for doctors only)
+  const acceptPatient = () => {
+    if (role === "doctor" && waitingPatientId && socketRef.current) {
+      socketRef.current.emit("accept-patient", waitingPatientId)
+      setWaitingPatientId(null)
     }
   }
 
@@ -111,7 +174,7 @@ export default function VideoCall() {
     if (localStreamRef.current) {
       const audioTracks = localStreamRef.current.getAudioTracks()
       audioTracks.forEach((track) => {
-        track.enabled = !isMuted
+        track.enabled = isMuted
       })
       setIsMuted(!isMuted)
     }
@@ -131,12 +194,15 @@ export default function VideoCall() {
   // End call
   const endCall = () => {
     setIsCallActive(false)
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop())
+    setStatus(role === "doctor" ? "Waiting for patients..." : "Call ended. Refresh to try again.")
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null
     }
 
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close()
+      peerConnectionRef.current = null
     }
   }
 
@@ -155,9 +221,9 @@ export default function VideoCall() {
   }
 
   return (
-    <div className="relative w-full  bg-gray-400/20 rounded-lg overflow-hidden ">
+    <div className="relative w-full max-w-7xl bg-gray-400/20 rounded-lg overflow-hidden">
       <div className="p-4 flex justify-between items-center">
-        <div className="text-sm text-gray-200">video call Primary()</div>
+        <div className="text-sm text-gray-200">video call Primary() - {status}</div>
         <div className="flex items-center gap-2">
           <Button
             variant="default"
@@ -182,7 +248,7 @@ export default function VideoCall() {
               <AvatarFallback>You</AvatarFallback>
             </Avatar>
           )}
-          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">You</div>
+          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">You ({role})</div>
         </div>
 
         <div className="bg-white rounded-lg aspect-square flex items-center justify-center relative overflow-hidden">
@@ -190,19 +256,31 @@ export default function VideoCall() {
             <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
           ) : (
             <Avatar className="w-24 h-24 border-4 border-white">
-              <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Doctor" />
-              <AvatarFallback>Dr</AvatarFallback>
+              <AvatarImage src="/placeholder.svg?height=96&width=96" alt={role === "doctor" ? "Patient" : "Doctor"} />
+              <AvatarFallback>{role === "doctor" ? "P" : "Dr"}</AvatarFallback>
             </Avatar>
           )}
-          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">Doctor</div>
+          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            {role === "doctor" ? "Patient" : "Doctor"}
+          </div>
         </div>
       </div>
 
       <div className="p-4 flex justify-between items-center">
-        <Button variant="outline" className="bg-black/50 hover:bg-black/70 text-white border-none gap-2 w-80">
-          <FileText size={16} />
-          <span>Show Medical form</span>
-        </Button>
+        {role === "doctor" && waitingPatientId ? (
+          <Button
+            variant="outline"
+            className="bg-green-600 hover:bg-green-700 text-white border-none"
+            onClick={acceptPatient}
+          >
+            Accept Patient
+          </Button>
+        ) : (
+          <Button variant="outline" className="bg-black/50 hover:bg-black/70 text-white border-none gap-2 w-80">
+            <FileText size={16} />
+            <span>Show Medical form</span>
+          </Button>
+        )}
 
         <div className="flex items-center gap-2">
           <Button
