@@ -1,7 +1,9 @@
-import LandingPage from "@/app/features/home/landing-page";
+import VideoCall from "@/app/features/videocall/videocall";
 export default function Home() {
   return (
-  <LandingPage/>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white">
+    <VideoCall />
+  </main>
 
   );
 }
