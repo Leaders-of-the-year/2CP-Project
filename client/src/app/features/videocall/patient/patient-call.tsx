@@ -16,18 +16,24 @@ export default function Patient() {
   const [connectionState, setConnectionState] = useState<string>("new");
   const [streamError, setStreamError] = useState<string | null>(null);
   const hasRequestedCall = useRef<boolean>(false);
+  const isMounted = useRef<boolean>(false); // Track mount state
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
+  // Debug state changes
+  useEffect(() => {
+    console.log("Local stream state changed:", localStream);
+  }, [localStream]);
+
   useEffect(() => {
     console.log("🧑‍💼 Patient component initialized");
+    isMounted.current = true;
 
     const initialize = async () => {
       console.log("Starting initialization...");
       const stream = await setupLocalStream();
       console.log("Local stream after setup (direct):", stream);
-      console.log("Local stream state after setup:", localStream);
 
       if (stream && !hasRequestedCall.current) {
         socket.emit("request-call");
@@ -49,7 +55,7 @@ export default function Patient() {
     socket.on("call-accepted", async (docId: string) => {
       console.log("✅ Call accepted by doctor:", docId);
       console.log("Local stream before setupCall:", localStream);
-      if (!localStream) {
+      if (!localStream && isMounted.current) {
         console.warn("⚠️ Local stream is null, re-initializing...");
         const stream = await setupLocalStream();
         if (!stream) {
@@ -79,18 +85,19 @@ export default function Patient() {
 
     return () => {
       console.log("Cleaning up Patient component...");
+      isMounted.current = false;
       socket.off("call-accepted");
       socket.off("receive-offer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      // Only stop tracks if explicitly leaving the call flow
-      // if (localStream && !isCallStarted) {
-      //   console.log("Stopping local stream tracks...");
-      //   localStream.getTracks().forEach(track => track.stop());
-      //   setLocalStream(null);
-      // }
+      // Only stop stream if explicitly leaving, not on HMR
+      if (localStream && !isCallStarted && !hasRequestedCall.current) {
+        console.log("Stopping local stream tracks...");
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
+      }
     };
-  }, []); // Empty dependency array
+  }, []);
 
   const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
