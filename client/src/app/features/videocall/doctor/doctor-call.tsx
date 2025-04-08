@@ -5,9 +5,7 @@ import { io } from "socket.io-client";
 const socket = io("https://localhost:3001", {
   secure: true,
   rejectUnauthorized: false,
-  query: {
-    role: "doctor", // Correct role
-  },
+  query: { role: "doctor" },
 });
 
 export default function Doctor() {
@@ -22,15 +20,17 @@ export default function Doctor() {
 
   useEffect(() => {
     console.log("👨‍⚕️ Doctor component initialized");
-    setupLocalStream();
 
-    socket.emit("register-doctor");
+    const initialize = async () => {
+      await setupLocalStream(); // Wait for stream
+      socket.emit("register-doctor"); // Register only after stream is ready
+    };
+    initialize();
 
-    // Listen for waiting patients
-    socket.on("patient-waiting", (patientId) => {
-      console.log("🧑‍💼 Patient waiting:", patientId);
-      setPatientId(patientId);
-      socket.emit("accept-patient", patientId); // Accept the patient
+    socket.on("patient-waiting", (patId) => {
+      console.log("🧑‍💼 Patient waiting:", patId);
+      setPatientId(patId);
+      socket.emit("accept-patient", patId);
     });
 
     socket.on("call-accepted", (patId) => {
@@ -62,24 +62,32 @@ export default function Doctor() {
       socket.off("call-ended");
       if (localStream) localStream.getTracks().forEach(track => track.stop());
     };
-  }, []);
+  }, [localStream]); // Re-run if localStream changes
 
   const setupLocalStream = async () => {
     try {
+      console.log("🎥 Setting up local stream...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      console.log("✅ Local stream obtained:", stream.id);
       setLocalStream(stream);
-      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      if (localVideoRef.current) {
+        console.log("📺 Setting local video source");
+        localVideoRef.current.srcObject = stream;
+      }
     } catch (error) {
       console.error("❌ Error accessing media devices:", error);
     }
   };
 
   const setupCall = async (patId) => {
+    if (!localStream) {
+      console.error("❌ Cannot setup call: localStream is not ready");
+      return;
+    }
+
+    console.log("🔄 Setting up WebRTC connection with patient:", patId);
     const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-      ],
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
     });
 
     pc.onconnectionstatechange = () => setConnectionState(pc.connectionState);
@@ -127,7 +135,10 @@ export default function Doctor() {
           <button onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">End Call</button>
         </div>
       ) : (
-        <p>Waiting for patients...</p>
+        <div>
+          <p>Waiting for patients...</p>
+          <video ref={localVideoRef} autoPlay muted playsInline className="w-full max-w-md" />
+        </div>
       )}
     </div>
   );
