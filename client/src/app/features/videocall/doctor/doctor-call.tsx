@@ -47,7 +47,7 @@ export default function Doctor() {
       console.log("ℹ️ Component re-mounted, but doctor already registered");
     }
 
-    socket.on("patient-waiting",之路 (patId: string) => {
+    socket.on("patient-waiting", (patId: string) => {
       console.log("🧑‍💼 New patient waiting:", patId);
       console.log("Local stream when patient is waiting:", localStream);
       if (!isCallStarted && !waitingPatientId) {
