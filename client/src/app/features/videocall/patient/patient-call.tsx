@@ -15,6 +15,7 @@ export default function Patient() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<string>("new");
+  const [streamError, setStreamError] = useState<string | null>(null); // Track stream errors
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -23,13 +24,21 @@ export default function Patient() {
     console.log("🧑‍💼 Patient component initialized");
 
     const initialize = async () => {
-      await setupLocalStream();
-      socket.emit("request-call");
+      console.log("Starting initialization...");
+      await setupLocalStream(); // Wait for stream
+      console.log("Local stream after setup:", localStream);
+      if (localStream) {
+        socket.emit("request-call");
+        console.log("✅ Emitted request-call");
+      } else {
+        console.warn("⚠️ Did not emit request-call: localStream is null");
+      }
     };
     initialize();
 
     socket.on("call-accepted", (docId: string) => {
       console.log("✅ Call accepted by doctor:", docId);
+      console.log("Local stream before setupCall:", localStream);
       setDoctorId(docId);
       setIsWaiting(false);
       setupCall(docId);
@@ -51,69 +60,105 @@ export default function Patient() {
     });
 
     return () => {
+      console.log("Cleaning up Patient component...");
       socket.off("call-accepted");
       socket.off("receive-offer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream) localStream.getTracks().forEach(track => track.stop());
+      if (localStream) {
+        console.log("Stopping local stream tracks...");
+        localStream.getTracks().forEach(track => track.stop());
+      }
     };
-  }, []);
+  }, [localStream]); // Re-run if localStream changes
 
   const setupLocalStream = async () => {
     try {
       console.log("🎥 Setting up local stream...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       console.log("✅ Local stream obtained:", stream.id);
+      console.log("Stream tracks:", stream.getTracks());
       setLocalStream(stream);
       if (localVideoRef.current) {
         console.log("📺 Setting local video source");
         localVideoRef.current.srcObject = stream;
+      } else {
+        console.warn("⚠️ localVideoRef is null");
       }
     } catch (error) {
       console.error("❌ Error accessing media devices:", error);
+      setStreamError(error instanceof Error ? error.message : "Unknown error");
     }
   };
 
   const setupCall = (docId: string) => {
+    console.log("🔄 Attempting to setup WebRTC connection with doctor:", docId);
+    console.log("Current localStream:", localStream);
     if (!localStream) {
       console.error("❌ Cannot setup call: localStream is not ready");
+      setStreamError("Local stream not available. Please check camera/microphone permissions.");
       return;
     }
 
-    console.log("🔄 Setting up WebRTC connection with doctor:", docId);
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
     });
 
-    pc.onconnectionstatechange = () => setConnectionState(pc.connectionState);
+    pc.onconnectionstatechange = () => {
+      console.log("Connection state changed:", pc.connectionState);
+      setConnectionState(pc.connectionState);
+    };
     pc.onicecandidate = (event) => {
-      if (event.candidate) socket.emit("send-ice-candidate", { candidate: event.candidate, to: docId });
+      if (event.candidate) {
+        console.log("❄️ Sending ICE candidate to doctor");
+        socket.emit("send-ice-candidate", { candidate: event.candidate, to: docId });
+      }
     };
     pc.ontrack = (event) => {
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0];
+      console.log("📹 Received remote track:", event.track.kind);
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      } else {
+        console.warn("⚠️ remoteVideoRef is null");
+      }
     };
 
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    console.log("Adding local tracks to peer connection...");
+    localStream.getTracks().forEach(track => {
+      console.log(`Adding track: ${track.kind}`);
+      pc.addTrack(track, localStream);
+    });
     setPeerConnection(pc);
     setIsCallStarted(true);
   };
 
   const handleOffer = async (offer: RTCSessionDescriptionInit, docId: string) => {
-    if (peerConnection) {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit("send-answer", { answer, to: docId });
+    if (!peerConnection) {
+      console.error("❌ PeerConnection is null");
+      return;
     }
+    console.log("Handling offer from doctor...");
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    socket.emit("send-answer", { answer, to: docId });
   };
 
   const handleNewICECandidate = async (candidate: RTCIceCandidateInit) => {
-    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    if (!peerConnection) {
+      console.error("❌ PeerConnection is null");
+      return;
+    }
+    console.log("Adding ICE candidate...");
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
   const endCall = () => {
-    if (peerConnection) peerConnection.close();
-    setPeerConnection(null);
+    console.log("Ending call...");
+    if (peerConnection) {
+      peerConnection.close();
+      setPeerConnection(null);
+    }
     setIsCallStarted(false);
     setIsWaiting(true);
     setDoctorId(null);
@@ -125,6 +170,7 @@ export default function Patient() {
     <div className="flex flex-col items-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-2xl font-bold mb-6">Patient Portal</h1>
       <p>Connection state: {connectionState}</p>
+      {streamError && <p className="text-red-500">Error: {streamError}</p>}
       {isWaiting ? (
         <div>
           <p>Waiting for a doctor...</p>

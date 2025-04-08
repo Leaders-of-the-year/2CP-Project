@@ -14,7 +14,8 @@ export default function Doctor() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [patientId, setPatientId] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<string>("new");
-  const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null); // Track waiting patient
+  const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null); // Track stream errors
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -23,19 +24,27 @@ export default function Doctor() {
     console.log("👨‍⚕️ Doctor component initialized");
 
     const initialize = async () => {
+      console.log("Starting initialization...");
       await setupLocalStream(); // Wait for stream
-      socket.emit("register-doctor"); // Register doctor once
-      console.log("👨‍⚕️ Doctor registered");
+      console.log("Local stream after setup:", localStream);
+      if (localStream) {
+        socket.emit("register-doctor");
+        console.log("👨‍⚕️ Doctor registered");
+      } else {
+        console.warn("⚠️ Did not register doctor: localStream is null");
+      }
     };
     initialize();
 
     socket.on("patient-waiting", (patId: string) => {
       console.log("🧑‍💼 Patient waiting:", patId);
-      setWaitingPatientId(patId); // Show the accept button for this patient
+      console.log("Local stream when patient is waiting:", localStream);
+      setWaitingPatientId(patId);
     });
 
     socket.on("call-accepted", (patId: string) => {
       console.log("✅ Call accepted with patient:", patId);
+      console.log("Local stream before setupCall:", localStream);
       setPatientId(patId);
       setupCall(patId);
     });
@@ -56,50 +65,75 @@ export default function Doctor() {
     });
 
     return () => {
+      console.log("Cleaning up Doctor component...");
       socket.off("patient-waiting");
       socket.off("call-accepted");
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream) localStream.getTracks().forEach(track => track.stop());
+      if (localStream) {
+        console.log("Stopping local stream tracks...");
+        localStream.getTracks().forEach(track => track.stop());
+      }
     };
-  }, []); // Empty dependency array to run only once on mount
+  }, []); // Run only once on mount
 
   const setupLocalStream = async () => {
     try {
       console.log("🎥 Setting up local stream...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       console.log("✅ Local stream obtained:", stream.id);
+      console.log("Stream tracks:", stream.getTracks());
       setLocalStream(stream);
       if (localVideoRef.current) {
         console.log("📺 Setting local video source");
         localVideoRef.current.srcObject = stream;
+      } else {
+        console.warn("⚠️ localVideoRef is null");
       }
     } catch (error) {
       console.error("❌ Error accessing media devices:", error);
+      setStreamError(error instanceof Error ? error.message : "Unknown error");
     }
   };
 
   const setupCall = async (patId: string) => {
+    console.log("🔄 Attempting to setup WebRTC connection with patient:", patId);
+    console.log("Current localStream:", localStream);
     if (!localStream) {
       console.error("❌ Cannot setup call: localStream is not ready");
+      setStreamError("Local stream not available. Please check camera/microphone permissions.");
       return;
     }
 
-    console.log("🔄 Setting up WebRTC connection with patient:", patId);
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
     });
 
-    pc.onconnectionstatechange = () => setConnectionState(pc.connectionState);
+    pc.onconnectionstatechange = () => {
+      console.log("Connection state changed:", pc.connectionState);
+      setConnectionState(pc.connectionState);
+    };
     pc.onicecandidate = (event) => {
-      if (event.candidate) socket.emit("send-ice-candidate", { candidate: event.candidate, to: patId });
+      if (event.candidate) {
+        console.log("❄️ Sending ICE candidate to patient");
+        socket.emit("send-ice-candidate", { candidate: event.candidate, to: patId });
+      }
     };
     pc.ontrack = (event) => {
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0];
+      console.log("📹 Received remote track:", event.track.kind);
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      } else {
+        console.warn("⚠️ remoteVideoRef is null");
+      }
     };
 
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    console.log("Adding local tracks to peer connection...");
+    localStream.getTracks().forEach(track => {
+      console.log(`Adding track: ${track.kind}`);
+      pc.addTrack(track, localStream);
+    });
     setPeerConnection(pc);
 
     const offer = await pc.createOffer();
@@ -110,26 +144,43 @@ export default function Doctor() {
   };
 
   const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
-    if (peerConnection) await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    if (!peerConnection) {
+      console.error("❌ PeerConnection is null");
+      return;
+    }
+    console.log("Handling answer from patient...");
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
   const handleNewICECandidate = async (candidate: RTCIceCandidateInit) => {
-    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    if (!peerConnection) {
+      console.error("❌ PeerConnection is null");
+      return;
+    }
+    console.log("Adding ICE candidate...");
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
   const endCall = () => {
-    if (peerConnection) peerConnection.close();
-    setPeerConnection(null);
+    console.log("Ending call...");
+    if (peerConnection) {
+      peerConnection.close();
+      setPeerConnection(null);
+    }
     setIsCallStarted(false);
     setPatientId(null);
-    setWaitingPatientId(null); // Reset waiting patient
+    setWaitingPatientId(null);
     setConnectionState("new");
   };
 
   const acceptPatient = () => {
     if (waitingPatientId) {
+      console.log("Accepting patient:", waitingPatientId);
+      console.log("Local stream before accepting:", localStream);
       socket.emit("accept-patient", waitingPatientId);
-      setWaitingPatientId(null); // Clear waiting patient after accepting
+      setWaitingPatientId(null);
+    } else {
+      console.warn("⚠️ No waiting patient to accept");
     }
   };
 
@@ -137,7 +188,7 @@ export default function Doctor() {
     <div className="flex flex-col items-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-2xl font-bold mb-6">Doctor Portal</h1>
       <p>Connection state: {connectionState}</p>
-
+      {streamError && <p className="text-red-500">Error: {streamError}</p>}
       {isCallStarted ? (
         <div>
           <video ref={remoteVideoRef} autoPlay playsInline className="w-full max-w-md" />
