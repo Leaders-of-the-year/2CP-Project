@@ -15,7 +15,8 @@ export default function Patient() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<string>("new");
-  const [streamError, setStreamError] = useState<string | null>(null); // Track stream errors
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const hasRequestedCall = useRef<boolean>(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -25,16 +26,26 @@ export default function Patient() {
 
     const initialize = async () => {
       console.log("Starting initialization...");
-      await setupLocalStream(); // Wait for stream
-      console.log("Local stream after setup:", localStream);
-      if (localStream) {
+      const stream = await setupLocalStream(); // Get stream directly
+      console.log("Local stream after setup (direct):", stream);
+      console.log("Local stream state after setup:", localStream); // Still null here
+
+      if (stream && !hasRequestedCall.current) {
         socket.emit("request-call");
         console.log("✅ Emitted request-call");
+        hasRequestedCall.current = true;
+      } else if (!stream) {
+        console.warn("⚠️ Did not emit request-call: stream is null");
       } else {
-        console.warn("⚠️ Did not emit request-call: localStream is null");
+        console.log("ℹ️ Skipping request-call: Already requested");
       }
     };
-    initialize();
+
+    if (!hasRequestedCall.current) {
+      initialize();
+    } else {
+      console.log("ℹ️ Component re-mounted, but request-call already sent");
+    }
 
     socket.on("call-accepted", (docId: string) => {
       console.log("✅ Call accepted by doctor:", docId);
@@ -65,14 +76,15 @@ export default function Patient() {
       socket.off("receive-offer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream) {
+      if (localStream && !isCallStarted) {
         console.log("Stopping local stream tracks...");
         localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
       }
     };
-  }, []); // Re-run if localStream changes
+  }, []);
 
-  const setupLocalStream = async () => {
+  const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
       console.log("🎥 Setting up local stream...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -85,9 +97,11 @@ export default function Patient() {
       } else {
         console.warn("⚠️ localVideoRef is null");
       }
+      return stream;
     } catch (error) {
       console.error("❌ Error accessing media devices:", error);
       setStreamError(error instanceof Error ? error.message : "Unknown error");
+      return null;
     }
   };
 
@@ -163,7 +177,11 @@ export default function Patient() {
     setIsWaiting(true);
     setDoctorId(null);
     setConnectionState("new");
-    socket.emit("request-call");
+    hasRequestedCall.current = false;
+    if (localStream) {
+      socket.emit("request-call");
+      console.log("✅ Emitted request-call after ending call");
+    }
   };
 
   return (
