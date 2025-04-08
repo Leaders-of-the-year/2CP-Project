@@ -12,37 +12,51 @@ export default function Patient() {
   const [isCallStarted, setIsCallStarted] = useState<boolean>(false);
   const [isWaiting, setIsWaiting] = useState<boolean>(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [doctorId, setDoctorId] = useState<string | null>(null);
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    console.log("🧑‍💼 Patient component initialized");
     // Setup local stream first
     setupLocalStream();
     
     // Request a call
     socket.emit("request-call");
     
-    socket.on("call-accepted", (doctorId: string) => {
-      console.log("✅ Call accepted by doctor:", doctorId);
+    // Doctor accepted the call
+    socket.on("call-accepted", (docId: string) => {
+      console.log("✅ Call accepted by doctor:", docId);
+      setDoctorId(docId);
       setIsWaiting(false);
-      setupCall(doctorId);
+      setupCall(docId);
     });
     
-    socket.on("send-offer", (offer: RTCSessionDescriptionInit, doctorId: string) => {
-      console.log("Received offer from doctor:", doctorId);
-      handleOffer(offer, doctorId);
+    // Receive offer from doctor
+    socket.on("send-offer", (offer: RTCSessionDescriptionInit, docId: string) => {
+      console.log("📝 Received offer from doctor:", docId);
+      handleOffer(offer, docId);
     });
     
+    // Receive ICE candidate from doctor
     socket.on("receive-ice-candidate", (candidate: RTCIceCandidateInit) => {
-      console.log("Received ICE candidate:", candidate);
+      console.log("❄️ Received ICE candidate from doctor");
       handleNewICECandidate(candidate);
+    });
+    
+    // Call ended
+    socket.on("call-ended", () => {
+      console.log("📞 Call ended by doctor");
+      endCall();
     });
 
     return () => {
+      // Clean up listeners
       socket.off("call-accepted");
       socket.off("send-offer");
       socket.off("receive-ice-candidate");
+      socket.off("call-ended");
       
       // Clean up media streams
       if (localStream) {
@@ -69,7 +83,7 @@ export default function Patient() {
   };
 
   // Set up WebRTC connection when call is accepted
-  const setupCall = (doctorId: string) => {
+  const setupCall = (docId: string) => {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
@@ -77,13 +91,14 @@ export default function Patient() {
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit("send-ice-candidate", event.candidate, doctorId);
+        console.log("❄️ Sending ICE candidate to doctor");
+        socket.emit("send-ice-candidate", event.candidate, docId);
       }
     };
     
     // Handle incoming tracks from doctor
     pc.ontrack = (event) => {
-      console.log("Received track from doctor");
+      console.log("📹 Received track from doctor");
       if (remoteVideoRef.current && event.streams && event.streams[0]) {
         remoteVideoRef.current.srcObject = event.streams[0];
       }
@@ -101,21 +116,26 @@ export default function Patient() {
   };
 
   // Handle the offer received from the doctor
-  const handleOffer = (offer: RTCSessionDescriptionInit, doctorId: string) => {
+  const handleOffer = (offer: RTCSessionDescriptionInit, docId: string) => {
     if (peerConnection) {
       peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
         .then(() => {
+          console.log("✅ Remote description set, creating answer");
           // Create an answer to the offer
           return peerConnection.createAnswer();
         })
         .then((answer) => {
+          console.log("✅ Answer created, setting local description");
           return peerConnection.setLocalDescription(answer);
         })
         .then(() => {
-          socket.emit("send-answer", peerConnection.localDescription, doctorId);
+          console.log("✅ Local description set, sending answer to doctor");
+          if (peerConnection.localDescription) {
+            socket.emit("send-answer", peerConnection.localDescription, docId);
+          }
         })
         .catch((error) => {
-          console.error("Error handling offer:", error);
+          console.error("❌ Error handling offer:", error);
         });
     }
   };
@@ -125,7 +145,7 @@ export default function Patient() {
     if (peerConnection) {
       peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
         .catch((error) => {
-          console.error("Error adding ICE candidate:", error);
+          console.error("❌ Error adding ICE candidate:", error);
         });
     }
   };
@@ -139,6 +159,7 @@ export default function Patient() {
     
     setIsCallStarted(false);
     setIsWaiting(true);
+    setDoctorId(null);
     
     // Request a new call
     socket.emit("request-call");
