@@ -13,7 +13,6 @@ export default function Patient() {
   const [isCallStarted, setIsCallStarted] = useState<boolean>(false);
   const [isWaiting, setIsWaiting] = useState<boolean>(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  // Removed unused doctorId state
   const [connectionState, setConnectionState] = useState<string>("new");
   const [streamError, setStreamError] = useState<string | null>(null);
   const hasRequestedCall = useRef<boolean>(false);
@@ -50,7 +49,6 @@ export default function Patient() {
     socket.on("call-accepted", (docId: string) => {
       console.log("✅ Call accepted by doctor:", docId);
       console.log("Local stream before setupCall:", localStream);
-      setDoctorId(docId);
       setIsWaiting(false);
       setupCall(docId);
     });
@@ -82,7 +80,7 @@ export default function Patient() {
         setLocalStream(null);
       }
     };
-  }, [endCall, handleNewICECandidate, handleOffer, isCallStarted, localStream, setupCall]);
+  }, []); // Empty dependency array since no external functions or state are needed
 
   const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
@@ -175,7 +173,6 @@ export default function Patient() {
     }
     setIsCallStarted(false);
     setIsWaiting(true);
-    setDoctorId(null);
     setConnectionState("new");
     hasRequestedCall.current = false;
     if (localStream) {
@@ -198,7 +195,9 @@ export default function Patient() {
         <div>
           <video ref={remoteVideoRef} autoPlay playsInline className="w-full max-w-md" />
           <video ref={localVideoRef} autoPlay muted playsInline className="w-full max-w-md" />
-          <button type="button" onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">End Call</button>
+          <button type="button" onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">
+            End Call
+          </button>
         </div>
       ) : (
         <p>Connecting to doctor...</p>
