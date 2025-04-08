@@ -15,7 +15,8 @@ export default function Doctor() {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<string>("new");
   const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null);
-  const [streamError, setStreamError] = useState<string | null>(null); // Track stream errors
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const hasRegistered = useRef<boolean>(false); // Track if doctor has registered
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -25,21 +26,38 @@ export default function Doctor() {
 
     const initialize = async () => {
       console.log("Starting initialization...");
-      await setupLocalStream(); // Wait for stream
+      await setupLocalStream();
       console.log("Local stream after setup:", localStream);
-      if (localStream) {
+
+      // Register doctor only once
+      if (localStream && !hasRegistered.current) {
         socket.emit("register-doctor");
-        console.log("👨‍⚕️ Doctor registered");
-      } else {
+        console.log("👨‍⚕️ Doctor registered with socket ID:", socket.id);
+        hasRegistered.current = true;
+      } else if (!localStream) {
         console.warn("⚠️ Did not register doctor: localStream is null");
+      } else {
+        console.log("ℹ️ Skipping registration: Doctor already registered");
       }
     };
-    initialize();
 
+    // Run initialization if not already registered
+    if (!hasRegistered.current) {
+      initialize();
+    } else {
+      console.log("ℹ️ Component re-mounted, but doctor already registered");
+    }
+
+    // Listen for new patient requests
     socket.on("patient-waiting", (patId: string) => {
-      console.log("🧑‍💼 Patient waiting:", patId);
+      console.log("🧑‍💼 New patient waiting:", patId);
       console.log("Local stream when patient is waiting:", localStream);
-      setWaitingPatientId(patId);
+      if (!isCallStarted && !waitingPatientId) {
+        setWaitingPatientId(patId); // Show accept button for new patient
+        console.log("✅ Updated UI to show patient", patId);
+      } else {
+        console.log("ℹ️ Ignoring patient request: Doctor is busy or already has a waiting patient");
+      }
     });
 
     socket.on("call-accepted", (patId: string) => {
@@ -71,12 +89,13 @@ export default function Doctor() {
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream) {
+      if (localStream && !isCallStarted) {
         console.log("Stopping local stream tracks...");
         localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
       }
     };
-  }, []); // Run only once on mount
+  }, []); // Empty dependency array to run only once on mount
 
   const setupLocalStream = async () => {
     try {
