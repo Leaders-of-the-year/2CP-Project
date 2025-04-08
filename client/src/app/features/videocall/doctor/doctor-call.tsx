@@ -5,7 +5,11 @@ import { io } from "socket.io-client";
 const socket = io("https://localhost:3001", {
   secure: true,
   rejectUnauthorized: false,
+  query: {
+    role: "doctor",
+  },
 });
+
 
 export default function Patient() {
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
@@ -24,7 +28,7 @@ export default function Patient() {
     setupLocalStream();
     
     // Request a call
-    socket.emit("request-call");
+    socket.emit("register-doctor");
     
     // Doctor accepted the call
     socket.on("call-accepted", (docId: string) => {

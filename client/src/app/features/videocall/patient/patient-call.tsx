@@ -5,7 +5,11 @@ import { io } from "socket.io-client";
 const socket = io("https://localhost:3001", {
   secure: true,
   rejectUnauthorized: false,
+  query: {
+    role: "patient",
+  },
 });
+
 
 export default function Patient() {
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
