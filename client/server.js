@@ -24,7 +24,7 @@ app.prepare().then(() => {
     .createServer(options, (req, res) => {
       handle(req, res);
     })
-    .listen(3000, (err) => {
+    .listen(3000,'192.168.43.25', (err) => {
       if (err) throw err;
       console.log('> Ready on https://localhost:3000');
     });
