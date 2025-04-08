@@ -13,7 +13,7 @@ export default function Patient() {
   const [isCallStarted, setIsCallStarted] = useState<boolean>(false);
   const [isWaiting, setIsWaiting] = useState<boolean>(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [doctorId, setDoctorId] = useState<string | null>(null);
+  // Removed unused doctorId state
   const [connectionState, setConnectionState] = useState<string>("new");
   const [streamError, setStreamError] = useState<string | null>(null);
   const hasRequestedCall = useRef<boolean>(false);
@@ -82,7 +82,7 @@ export default function Patient() {
         setLocalStream(null);
       }
     };
-  }, []);
+  }, [endCall, handleNewICECandidate, handleOffer, isCallStarted, localStream, setupCall]);
 
   const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
@@ -198,7 +198,7 @@ export default function Patient() {
         <div>
           <video ref={remoteVideoRef} autoPlay playsInline className="w-full max-w-md" />
           <video ref={localVideoRef} autoPlay muted playsInline className="w-full max-w-md" />
-          <button onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">End Call</button>
+          <button type="button" onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">End Call</button>
         </div>
       ) : (
         <p>Connecting to doctor...</p>
