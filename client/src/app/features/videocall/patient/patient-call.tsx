@@ -13,6 +13,7 @@ export default function Patient() {
   const [isWaiting, setIsWaiting] = useState<boolean>(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<string>("new");
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -67,26 +68,50 @@ export default function Patient() {
 
   const setupLocalStream = async () => {
     try {
+      console.log("🎥 Setting up local stream...");
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: true, 
         audio: true 
       });
       
+      console.log("✅ Local stream obtained:", stream.id);
       setLocalStream(stream);
       
       if (localVideoRef.current) {
+        console.log("📺 Setting local video source");
         localVideoRef.current.srcObject = stream;
+        
+        // Debug: Check if video element is rendered
+        console.log("Local video element dimensions:", 
+          localVideoRef.current.offsetWidth, 
+          localVideoRef.current.offsetHeight);
+      } else {
+        console.error("❌ Local video ref is null");
       }
     } catch (error) {
-      console.error("Error accessing media devices:", error);
+      console.error("❌ Error accessing media devices:", error);
     }
   };
 
   // Set up WebRTC connection when call is accepted
   const setupCall = (docId: string) => {
+    console.log("🔄 Setting up WebRTC connection with doctor:", docId);
     const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
     });
+    
+    // Log connection state changes
+    pc.onconnectionstatechange = () => {
+      console.log("Connection state changed:", pc.connectionState);
+      setConnectionState(pc.connectionState);
+    };
+    
+    pc.oniceconnectionstatechange = () => {
+      console.log("ICE connection state:", pc.iceConnectionState);
+    };
     
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
@@ -98,17 +123,30 @@ export default function Patient() {
     
     // Handle incoming tracks from doctor
     pc.ontrack = (event) => {
-      console.log("📹 Received track from doctor");
+      console.log("📹 Received track from doctor:", event.track.kind);
+      
       if (remoteVideoRef.current && event.streams && event.streams[0]) {
+        console.log("Setting remote video source:", event.streams[0].id);
         remoteVideoRef.current.srcObject = event.streams[0];
+        
+        // Ensure video is played (sometimes needed for autoplay to work)
+        remoteVideoRef.current.play().catch(err => {
+          console.error("Error playing remote video:", err);
+        });
+      } else {
+        console.error("❌ Remote video ref is null or no streams received");
       }
     };
     
     // Add local tracks to peer connection
     if (localStream) {
+      console.log("Adding local tracks to peer connection");
       localStream.getTracks().forEach(track => {
+        console.log(`Adding ${track.kind} track to peer connection`);
         pc.addTrack(track, localStream);
       });
+    } else {
+      console.error("❌ No local stream available to add tracks");
     }
     
     setPeerConnection(pc);
@@ -118,6 +156,7 @@ export default function Patient() {
   // Handle the offer received from the doctor
   const handleOffer = (offer: RTCSessionDescriptionInit, docId: string) => {
     if (peerConnection) {
+      console.log("Setting remote description from offer");
       peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
         .then(() => {
           console.log("✅ Remote description set, creating answer");
@@ -137,16 +176,21 @@ export default function Patient() {
         .catch((error) => {
           console.error("❌ Error handling offer:", error);
         });
+    } else {
+      console.error("❌ PeerConnection is null when handling offer");
     }
   };
 
   // Handle new ICE candidates received from the doctor
   const handleNewICECandidate = (candidate: RTCIceCandidateInit) => {
     if (peerConnection) {
+      console.log("Adding ICE candidate to peer connection");
       peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
         .catch((error) => {
           console.error("❌ Error adding ICE candidate:", error);
         });
+    } else {
+      console.error("❌ PeerConnection is null when handling ICE candidate");
     }
   };
 
@@ -160,6 +204,7 @@ export default function Patient() {
     setIsCallStarted(false);
     setIsWaiting(true);
     setDoctorId(null);
+    setConnectionState("new");
     
     // Request a new call
     socket.emit("request-call");
@@ -168,6 +213,7 @@ export default function Patient() {
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-2xl font-bold mb-6">Patient Portal</h1>
+      <p className="mb-4">Connection state: {connectionState}</p>
       
       {isWaiting ? (
         <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md text-center">
@@ -175,13 +221,17 @@ export default function Patient() {
             <div className="h-12 w-12 bg-blue-400 rounded-full mx-auto"></div>
           </div>
           <p className="text-lg">Waiting for a doctor to accept your call...</p>
-          <video 
-            ref={localVideoRef}
-            autoPlay 
-            muted 
-            playsInline
-            className="mt-4 w-full rounded-lg bg-black"
-          />
+          <div className="mt-4 w-full rounded-lg bg-black overflow-hidden">
+            <video 
+              ref={localVideoRef}
+              autoPlay 
+              muted 
+              playsInline
+              className="w-full h-64 object-cover"
+              style={{ backgroundColor: "#000" }}
+            />
+          </div>
+          <p className="text-sm mt-2 text-gray-500">Your camera preview</p>
         </div>
       ) : isCallStarted ? (
         <div className="w-full max-w-5xl">
@@ -190,10 +240,16 @@ export default function Patient() {
             <div className="md:col-span-2 bg-black rounded-lg overflow-hidden aspect-video">
               <video 
                 ref={remoteVideoRef}
-                autoPlay 
+                autoPlay
                 playsInline
                 className="w-full h-full object-cover"
+                style={{ backgroundColor: "#000" }}
               />
+              {connectionState !== "connected" && (
+                <div className="absolute inset-0 flex items-center justify-center text-white">
+                  Connecting to doctor...
+                </div>
+              )}
             </div>
             
             {/* Self view (patient) */}
