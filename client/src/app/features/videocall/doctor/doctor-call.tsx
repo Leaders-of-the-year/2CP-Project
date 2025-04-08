@@ -17,6 +17,13 @@ export default function Doctor() {
   const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const hasRegistered = useRef<boolean>(false);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  
+  // Queue for storing ICE candidates received before peer connection is ready
+  const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
+  // Store the answer until we're ready to handle it
+  const pendingAnswer = useRef<RTCSessionDescriptionInit | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -28,7 +35,6 @@ export default function Doctor() {
       console.log("Starting initialization...");
       const stream = await setupLocalStream(); // Get stream directly
       console.log("Local stream after setup (direct):", stream);
-      console.log("Local stream state after setup:", localStream); // Still null here
 
       if (stream && !hasRegistered.current) {
         socket.emit("register-doctor");
@@ -49,7 +55,7 @@ export default function Doctor() {
 
     socket.on("patient-waiting", (patId: string) => {
       console.log("🧑‍💼 New patient waiting:", patId);
-      console.log("Local stream when patient is waiting:", localStream);
+      console.log("Local stream when patient is waiting:", localStreamRef.current);
       if (!isCallStarted && !waitingPatientId) {
         setWaitingPatientId(patId);
         console.log("✅ Updated UI to show patient", patId);
@@ -60,19 +66,45 @@ export default function Doctor() {
 
     socket.on("call-accepted", (patId: string) => {
       console.log("✅ Call accepted with patient:", patId);
-      console.log("Local stream before setupCall:", localStream);
+      console.log("Local stream before setupCall:", localStreamRef.current);
       setPatientId(patId);
       setupCall(patId);
+      
+      // Process any pending answer
+      if (pendingAnswer.current && peerConnectionRef.current) {
+        console.log("Processing pending answer");
+        handleAnswer(pendingAnswer.current);
+        pendingAnswer.current = null;
+      }
+      
+      // Process any pending ICE candidates
+      if (pendingIceCandidates.current.length > 0 && peerConnectionRef.current) {
+        console.log(`Processing ${pendingIceCandidates.current.length} pending ICE candidates`);
+        pendingIceCandidates.current.forEach(candidate => {
+          handleNewICECandidate(candidate);
+        });
+        pendingIceCandidates.current = [];
+      }
     });
 
     socket.on("receive-answer", ({ answer, from }: { answer: RTCSessionDescriptionInit; from: string }) => {
       console.log("📝 Received answer from patient:", from);
-      handleAnswer(answer);
+      if (peerConnectionRef.current) {
+        handleAnswer(answer);
+      } else {
+        console.log("⏳ Storing answer until peer connection is ready");
+        pendingAnswer.current = answer;
+      }
     });
 
     socket.on("receive-ice-candidate", ({ candidate }: { candidate: RTCIceCandidateInit }) => {
       console.log("❄️ Received ICE candidate from patient");
-      handleNewICECandidate(candidate);
+      if (peerConnectionRef.current) {
+        handleNewICECandidate(candidate);
+      } else {
+        console.log("⏳ Storing ICE candidate until peer connection is ready");
+        pendingIceCandidates.current.push(candidate);
+      }
     });
 
     socket.on("call-ended", () => {
@@ -87,11 +119,12 @@ export default function Doctor() {
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream && !isCallStarted) {
-        console.log("Stopping local stream tracks...");
-        localStream.getTracks().forEach(track => track.stop());
-        setLocalStream(null);
+      
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
       }
+      setPeerConnection(null);
     };
   }, []);
 
@@ -101,7 +134,11 @@ export default function Doctor() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       console.log("✅ Local stream obtained:", stream.id);
       console.log("Stream tracks:", stream.getTracks());
+      
+      // Store stream in state AND ref
       setLocalStream(stream);
+      localStreamRef.current = stream;
+      
       if (localVideoRef.current) {
         console.log("📺 Setting local video source");
         localVideoRef.current.srcObject = stream;
@@ -118,8 +155,8 @@ export default function Doctor() {
 
   const setupCall = async (patId: string) => {
     console.log("🔄 Attempting to setup WebRTC connection with patient:", patId);
-    console.log("Current localStream:", localStream);
-    if (!localStream) {
+    console.log("Current localStream ref:", localStreamRef.current);
+    if (!localStreamRef.current) {
       console.error("❌ Cannot setup call: localStream is not ready");
       setStreamError("Local stream not available. Please check camera/microphone permissions.");
       return;
@@ -149,11 +186,14 @@ export default function Doctor() {
     };
 
     console.log("Adding local tracks to peer connection...");
-    localStream.getTracks().forEach(track => {
+    localStreamRef.current.getTracks().forEach(track => {
       console.log(`Adding track: ${track.kind}`);
-      pc.addTrack(track, localStream);
+      pc.addTrack(track, localStreamRef.current!);
     });
+    
+    // Store in both state and ref
     setPeerConnection(pc);
+    peerConnectionRef.current = pc;
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -163,39 +203,42 @@ export default function Doctor() {
   };
 
   const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
-    if (!peerConnection) {
+    if (!peerConnectionRef.current) {
       console.error("❌ PeerConnection is null");
       return;
     }
     console.log("Handling answer from patient...");
-    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
   const handleNewICECandidate = async (candidate: RTCIceCandidateInit) => {
-    if (!peerConnection) {
+    if (!peerConnectionRef.current) {
       console.error("❌ PeerConnection is null");
       return;
     }
     console.log("Adding ICE candidate...");
-    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
   const endCall = () => {
     console.log("Ending call...");
-    if (peerConnection) {
-      peerConnection.close();
-      setPeerConnection(null);
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
     }
+    setPeerConnection(null);
     setIsCallStarted(false);
     setPatientId(null);
     setWaitingPatientId(null);
     setConnectionState("new");
+    pendingIceCandidates.current = [];
+    pendingAnswer.current = null;
   };
 
   const acceptPatient = () => {
     if (waitingPatientId) {
       console.log("Accepting patient:", waitingPatientId);
-      console.log("Local stream before accepting:", localStream);
+      console.log("Local stream before accepting:", localStreamRef.current);
       socket.emit("accept-patient", waitingPatientId);
       setWaitingPatientId(null);
     } else {
