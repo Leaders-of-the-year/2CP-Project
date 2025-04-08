@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
-const socket: Socket = io("https://localhost:3001", {
+const socket: Socket = io("https://192.168.43.25:3001", {
   secure: true,
   rejectUnauthorized: false,
   query: { role: "patient" },
