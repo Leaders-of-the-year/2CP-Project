@@ -1,50 +1,51 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-const socket = io("https://localhost:3001", {
+const socket: Socket = io("https://localhost:3001", {
   secure: true,
   rejectUnauthorized: false,
   query: { role: "doctor" },
 });
 
 export default function Doctor() {
-  const [peerConnection, setPeerConnection] = useState(null);
-  const [isCallStarted, setIsCallStarted] = useState(false);
-  const [localStream, setLocalStream] = useState(null);
-  const [patientId, setPatientId] = useState(null);
-  const [connectionState, setConnectionState] = useState("new");
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [isCallStarted, setIsCallStarted] = useState<boolean>(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [patientId, setPatientId] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<string>("new");
+  const [waitingPatientId, setWaitingPatientId] = useState<string | null>(null); // Track waiting patient
 
-  const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     console.log("👨‍⚕️ Doctor component initialized");
 
     const initialize = async () => {
       await setupLocalStream(); // Wait for stream
-      socket.emit("register-doctor"); // Register only after stream is ready
+      socket.emit("register-doctor"); // Register doctor once
+      console.log("👨‍⚕️ Doctor registered");
     };
     initialize();
 
-    socket.on("patient-waiting", (patId) => {
+    socket.on("patient-waiting", (patId: string) => {
       console.log("🧑‍💼 Patient waiting:", patId);
-      setPatientId(patId);
-      socket.emit("accept-patient", patId);
+      setWaitingPatientId(patId); // Show the accept button for this patient
     });
 
-    socket.on("call-accepted", (patId) => {
+    socket.on("call-accepted", (patId: string) => {
       console.log("✅ Call accepted with patient:", patId);
       setPatientId(patId);
       setupCall(patId);
     });
 
-    socket.on("receive-answer", ({ answer, from }) => {
+    socket.on("receive-answer", ({ answer, from }: { answer: RTCSessionDescriptionInit; from: string }) => {
       console.log("📝 Received answer from patient:", from);
       handleAnswer(answer);
     });
 
-    socket.on("receive-ice-candidate", ({ candidate }) => {
+    socket.on("receive-ice-candidate", ({ candidate }: { candidate: RTCIceCandidateInit }) => {
       console.log("❄️ Received ICE candidate from patient");
       handleNewICECandidate(candidate);
     });
@@ -62,7 +63,7 @@ export default function Doctor() {
       socket.off("call-ended");
       if (localStream) localStream.getTracks().forEach(track => track.stop());
     };
-  }, [localStream]); // Re-run if localStream changes
+  }, []); // Empty dependency array to run only once on mount
 
   const setupLocalStream = async () => {
     try {
@@ -79,7 +80,7 @@ export default function Doctor() {
     }
   };
 
-  const setupCall = async (patId) => {
+  const setupCall = async (patId: string) => {
     if (!localStream) {
       console.error("❌ Cannot setup call: localStream is not ready");
       return;
@@ -108,11 +109,11 @@ export default function Doctor() {
     setIsCallStarted(true);
   };
 
-  const handleAnswer = async (answer) => {
+  const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
     if (peerConnection) await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
-  const handleNewICECandidate = async (candidate) => {
+  const handleNewICECandidate = async (candidate: RTCIceCandidateInit) => {
     if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
@@ -121,18 +122,35 @@ export default function Doctor() {
     setPeerConnection(null);
     setIsCallStarted(false);
     setPatientId(null);
+    setWaitingPatientId(null); // Reset waiting patient
     setConnectionState("new");
+  };
+
+  const acceptPatient = () => {
+    if (waitingPatientId) {
+      socket.emit("accept-patient", waitingPatientId);
+      setWaitingPatientId(null); // Clear waiting patient after accepting
+    }
   };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-2xl font-bold mb-6">Doctor Portal</h1>
       <p>Connection state: {connectionState}</p>
+
       {isCallStarted ? (
         <div>
           <video ref={remoteVideoRef} autoPlay playsInline className="w-full max-w-md" />
           <video ref={localVideoRef} autoPlay muted playsInline className="w-full max-w-md" />
           <button onClick={endCall} className="mt-4 p-2 bg-red-500 text-white">End Call</button>
+        </div>
+      ) : waitingPatientId ? (
+        <div>
+          <p>Patient waiting: {waitingPatientId}</p>
+          <video ref={localVideoRef} autoPlay muted playsInline className="w-full max-w-md" />
+          <button onClick={acceptPatient} className="mt-4 p-2 bg-green-500 text-white">
+            Accept Patient
+          </button>
         </div>
       ) : (
         <div>
