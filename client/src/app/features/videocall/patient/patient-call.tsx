@@ -25,9 +25,9 @@ export default function Patient() {
 
     const initialize = async () => {
       console.log("Starting initialization...");
-      const stream = await setupLocalStream(); // Get stream directly
+      const stream = await setupLocalStream();
       console.log("Local stream after setup (direct):", stream);
-      console.log("Local stream state after setup:", localStream); // Still null here
+      console.log("Local stream state after setup:", localStream);
 
       if (stream && !hasRequestedCall.current) {
         socket.emit("request-call");
@@ -46,9 +46,18 @@ export default function Patient() {
       console.log("ℹ️ Component re-mounted, but request-call already sent");
     }
 
-    socket.on("call-accepted", (docId: string) => {
+    socket.on("call-accepted", async (docId: string) => {
       console.log("✅ Call accepted by doctor:", docId);
       console.log("Local stream before setupCall:", localStream);
+      if (!localStream) {
+        console.warn("⚠️ Local stream is null, re-initializing...");
+        const stream = await setupLocalStream();
+        if (!stream) {
+          console.error("❌ Failed to re-initialize localStream");
+          setStreamError("Failed to access camera/microphone.");
+          return;
+        }
+      }
       setIsWaiting(false);
       setupCall(docId);
     });
@@ -74,13 +83,14 @@ export default function Patient() {
       socket.off("receive-offer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
-      if (localStream && !isCallStarted) {
-        console.log("Stopping local stream tracks...");
-        localStream.getTracks().forEach(track => track.stop());
-        setLocalStream(null);
-      }
+      // Only stop tracks if explicitly leaving the call flow
+      // if (localStream && !isCallStarted) {
+      //   console.log("Stopping local stream tracks...");
+      //   localStream.getTracks().forEach(track => track.stop());
+      //   setLocalStream(null);
+      // }
     };
-  }, []); // Empty dependency array since no external functions or state are needed
+  }, []); // Empty dependency array
 
   const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
