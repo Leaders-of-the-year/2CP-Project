@@ -2,18 +2,21 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+  
+    "scripts": {
+      "dev": "node server.js",
+      "build": "next build",
+      "start": "next start"
+    }
+  
+  ,
   "dependencies": {
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^5.1.0",
     "lucide-react": "^0.474.0",
     "next": "15.1.6",
     "radix-ui": "^1.1.3",
