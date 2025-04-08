@@ -70,7 +70,7 @@ export default function Patient() {
         localStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [localStream]); // Re-run if localStream changes
+  }, []); // Re-run if localStream changes
 
   const setupLocalStream = async () => {
     try {
