@@ -15,7 +15,6 @@ import {
   BarChart,
   MoreHorizontal,
   Plus,
-  Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -322,40 +321,40 @@ export default function Doctor() {
           <div className="flex-1 flex">
             {isCallStarted ? (
               <div className="flex-1 grid grid-cols-2 gap-0">
-                  {/* Patient's video */}
-      <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
-        <Badge variant="secondary" className="absolute top-3 left-3 bg-main">
-          Jane Cooper
-        </Badge>
-        <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-          <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-        </div>
-      </div>
+                {/* Patient's video */}
+                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
+                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main">
+                    Jane Cooper
+                  </Badge>
+                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                  </div>
+                </div>
 
-      {/* Doctor's video */}
-      <div className="relative flex items-center justify-center bg-gradient-to-r from-[#d6e0e4] to-[#c5d2d8] p-4">
-        <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
-          You
-        </Badge>
-        <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-          <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-        </div>
+                {/* Doctor's video (self view) */}
+                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#d6e0e4] to-[#c5d2d8] p-4">
+                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
+                    You
+                  </Badge>
+                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                  </div>
 
-        {isRecording && (
-          <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
-            <span className="mr-1">REC</span>
-            <span>{recordingTime}</span>
-          </Badge>
-        )}
+                  {isRecording && (
+                    <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
+                      <span className="mr-1">REC</span>
+                      <span>{recordingTime}</span>
+                    </Badge>
+                  )}
                 </div>
               </div>
             ) : waitingPatientId ? (
               <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
                 <div className="text-center">
+                  <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden mx-auto mb-4 bg-gray-100">
                     <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                   </div>
                   <p className="text-main font-medium mb-2">Patient waiting: {waitingPatientId}</p>
-                  <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden mx-auto mb-4 bg-gray-100">
                   <Button onClick={acceptPatient} variant="default" className="bg-main hover:bg-main/90 text-white">
                     Accept Patient
                   </Button>
@@ -387,7 +386,7 @@ export default function Doctor() {
                 </div>
               </div>
             )}
-          {/* Sidebar */}
+            {/* Sidebar */}
           </div>
 
           <div className="w-16 border-l flex flex-col items-center py-4 bg-white">
@@ -444,10 +443,9 @@ export default function Doctor() {
         {/* Testimonial/feedback */}
         {isCallStarted && (
           <div className="relative mx-auto -mt-8 mb-4 z-10">
-            <div className="bg-main text-white px-6 py-3 rounded-md max-w-md shadow-md">
+            <div className="bg-main text-white px-6 py-3 rounded-md max-w-md shadow-md"></div>
+            <p className="text-sm">The consultation gave me a renewed sense of self-compassion and understanding.</p>
           </div>
-              <p className="text-sm">The consultation gave me a renewed sense of self-compassion and understanding.</p>
-            </div>
         )}
 
         {/* Footer with controls */}

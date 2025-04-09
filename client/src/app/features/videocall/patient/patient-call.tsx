@@ -1,7 +1,21 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
-import { Mic, MicOff, Video, VideoOff, Info, Users, MessageSquare, Subtitles, Phone, Hand, BarChart, MoreHorizontal, Plus, Settings } from 'lucide-react'
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Info,
+  Users,
+  MessageSquare,
+  Subtitles,
+  Phone,
+  Hand,
+  BarChart,
+  MoreHorizontal,
+  Plus,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -313,31 +327,32 @@ export default function Patient() {
               </div>
             ) : isCallStarted ? (
               <div className="flex-1 grid grid-cols-2 gap-0">
-                     {/* Doctor's video */}
-      <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
-        <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
-          Jane Cooper
-        </Badge>
-        <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-          <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-        </div>
-      </div>
+                {/* Doctor's video */}
+                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
+                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
+                    Jane Cooper
+                  </Badge>
+                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                  </div>
+                </div>
 
-      {/* Patient's video */}
-      <div className="relative flex items-center justify-center bg-gradient-to-r from-[#d6e0e4] to-[#c5d2d8] p-4">
-        <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
-          You
-        </Badge>
-        <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-          <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-        </div>
+                {/* Patient's video (self view) */}
+                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#d6e0e4] to-[#c5d2d8] p-4">
+                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
+                    You
+                  </Badge>
+                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                  </div>
 
-        {isRecording && (
-          <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
-            <span className="mr-1">REC</span>
-            <span>{recordingTime}</span>
-          </Badge>
-        )}            </div>
+                  {isRecording && (
+                    <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
+                      <span className="mr-1">REC</span>
+                      <span>{recordingTime}</span>
+                    </Badge>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
