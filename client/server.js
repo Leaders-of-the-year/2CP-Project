@@ -18,7 +18,7 @@ const options = {
   key: fs.readFileSync(keyPath),
   cert: fs.readFileSync(certPath),
 };
-
+// TO DO : CHANGE '0.0.0.0' to your server IP address that you want to bind to
 app.prepare().then(() => {
   https
     .createServer(options, (req, res) => {
@@ -26,6 +26,6 @@ app.prepare().then(() => {
     })
     .listen(3000,'192.168.43.25', (err) => {
       if (err) throw err;
-      console.log('> Ready on https://localhost:3000');
+      console.log('> Ready on https://192.168.43.25:3000');
     });
 });
