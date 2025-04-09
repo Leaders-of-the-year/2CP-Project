@@ -152,6 +152,7 @@ export default function Doctor() {
     }
   }, [])
 
+  // Fix the setupLocalStream function to ensure local video is properly displayed
   const setupLocalStream = async (): Promise<MediaStream | null> => {
     try {
       console.log("🎥 Setting up local stream...")
@@ -163,9 +164,12 @@ export default function Doctor() {
       setLocalStream(stream)
       localStreamRef.current = stream
 
+      // Ensure local video is displayed
       if (localVideoRef.current) {
         console.log("📺 Setting local video source")
         localVideoRef.current.srcObject = stream
+        // Ensure the video plays
+        localVideoRef.current.play().catch((e) => console.error("Error playing local video:", e))
       } else {
         console.warn("⚠️ localVideoRef is null")
       }
@@ -290,6 +294,27 @@ export default function Doctor() {
     }
   }
 
+  // Add this function to ensure video elements are properly set up when component mounts
+  useEffect(() => {
+    // Make sure local video is displayed if stream exists
+    if (localStreamRef.current && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current
+    }
+
+    // Make sure remote video is displayed if call is started
+    if (isCallStarted && remoteVideoRef.current && remoteVideoRef.current.srcObject === null) {
+      console.log("Attempting to recover remote video display")
+      if (peerConnectionRef.current) {
+        const receivers = peerConnectionRef.current.getReceivers()
+        const videoReceiver = receivers.find((receiver) => receiver.track?.kind === "video")
+        if (videoReceiver && videoReceiver.track) {
+          const stream = new MediaStream([videoReceiver.track])
+          remoteVideoRef.current.srcObject = stream
+        }
+      }
+    }
+  }, [isCallStarted])
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-[100vh]  w-full  shadow-md overflow-hidden">
@@ -349,10 +374,13 @@ export default function Doctor() {
                 </div>
               </div>
             ) : waitingPatientId ? (
+              // Fix the waiting patient view to properly show local video
               <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
                 <div className="text-center">
-                  <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden mx-auto mb-4 bg-gray-100">
-                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                  <div className="w-full max-w-md mx-auto mb-4">
+                    <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                      <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                    </div>
                   </div>
                   <p className="text-main font-medium mb-2">Patient waiting: {waitingPatientId}</p>
                   <Button onClick={acceptPatient} variant="default" className="bg-main hover:bg-main/90 text-white">
@@ -371,8 +399,10 @@ export default function Doctor() {
             ) : (
               <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
                 <div className="text-center">
-                  <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden mx-auto mb-4 bg-gray-100">
-                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                  <div className="w-full max-w-md mx-auto mb-4">
+                    <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
+                      <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                    </div>
                   </div>
                   <p className="text-main font-medium">Waiting for patients...</p>
                   <Badge variant="outline" className="mt-2 text-xs h-[40px] bg-main mx-2">
