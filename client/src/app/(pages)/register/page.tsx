@@ -1,17 +1,17 @@
 "use client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import SignInForm from "@/app/features/auth/components/sign-in-card"
+import SignUpForm from "@/app/features/auth/components/sign-up-card"
 
 // Create a client
 const queryClient = new QueryClient()
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex items-center justify-center bg-signin">
+      <div className="min-h-screen flex items-center justify-center bg-signup">
         <div className="w-full max-w-md">
-          <SignInForm />
+          <SignUpForm />
         </div>
       </div>
     </QueryClientProvider>

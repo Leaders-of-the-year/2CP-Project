@@ -91,3 +91,15 @@ line-height: 20px;
 }
 }
 /* TODO: PUT UTILS IN ANOTHER FILE */
+.bg-signin {
+  background-image: url('../../../public/signin.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.bg-signup {
+  background-image: url('../../../public/signup.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
