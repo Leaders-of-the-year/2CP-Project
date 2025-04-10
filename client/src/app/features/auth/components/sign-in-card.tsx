@@ -12,34 +12,33 @@ import { cn } from "@/lib/utils"
 interface SignInCredentials {
   email: string
   password: string
-  userType: "doctor" | "patient"
-  rememberMe: boolean
+  // userType: "doctor" | "patient"
+  // rememberMe: boolean
 }
 export default function SignInForm() {
   const router = useRouter()
   const [credentials, setCredentials] = useState<SignInCredentials>({
     email: "",
     password: "",
-    userType: "doctor",
-    rememberMe: false,
+    // userType: "doctor",
+    // rememberMe: false,
   })
   const signInMutation = useMutation({
-    mutationFn: async (credentials: SignInCredentials) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (credentials.email && credentials.password) {
-            resolve({
-              success: true,
-              user: {
-                email: credentials.email,
-                userType: credentials.userType,
-              },
-            })
-          } else {
-            reject(new Error("Invalid credentials"))
-          }
-        }, 1000)
+    mutationFn: async ({ email, password }: SignInCredentials) => {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       })
+  
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Login failed")
+      }
+  
+      return response.json()
     },
     onSuccess: (data) => {
       console.log("Sign in successful:", data)
@@ -49,14 +48,19 @@ export default function SignInForm() {
       console.error("Sign in failed:", error)
     },
   })
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     signInMutation.mutate(credentials)
   }
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setCredentials((prev) => ({ ...prev, [name]: value }))
+  
+    if (name === "email" || name === "password") {
+      setCredentials((prev) => ({ ...prev, [name]: value }))
+    }
   }
+  
   return (
     <div className=" backdrop-blur-sm rounded-3xl p-8 shadow-lg overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-teal-100/50 z-0"></div>
@@ -99,7 +103,7 @@ export default function SignInForm() {
             </div>
           </div>
           <RadioGroup
-            value={credentials.userType}
+            value={'doctor'}
             onValueChange={(value) => setCredentials((prev) => ({ ...prev, userType: value as "doctor" | "patient" }))}
             className="flex space-x-12"
           >
@@ -119,7 +123,7 @@ export default function SignInForm() {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="remember"
-              checked={credentials.rememberMe}
+              checked={true}
               onCheckedChange={(checked) => setCredentials((prev) => ({ ...prev, rememberMe: checked === true }))}
             />
             <Label htmlFor="remember" className="text-slate-700">
