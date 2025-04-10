@@ -470,13 +470,7 @@ export default function Doctor() {
           </div>
         </div>
 
-        {/* Testimonial/feedback */}
-        {isCallStarted && (
-          <div className="relative mx-auto -mt-8 mb-4 z-10">
-            <div className="bg-main text-white px-6 py-3 rounded-md max-w-md shadow-md"></div>
-            <p className="text-sm">The consultation gave me a renewed sense of self-compassion and understanding.</p>
-          </div>
-        )}
+     
 
         {/* Footer with controls */}
         <footer className="border-t  py-3 px-4 flex items-center  justify-between bg-main">
