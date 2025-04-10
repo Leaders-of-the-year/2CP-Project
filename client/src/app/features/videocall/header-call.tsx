@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Maximize2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function HeaderCall() {
   return (
@@ -15,9 +16,12 @@ export default function HeaderCall() {
           </div>
           <span className="text-sm font-medium text-white">2 Personnes</span>
         </div>
-        <button className="flex items-center justify-center h-10 w-10 rounded-full bg-black text-white hover:bg-gray-800 transition-colors">
+        <Button
+          variant="ghost"
+          className="flex items-center justify-center h-10 w-10 p-0 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
+        >
           <Maximize2 size={18} />
-        </button>
+        </Button>
       </div>
     </header>
   )

@@ -3,9 +3,10 @@ import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
 
 import { Badge } from "@/components/ui/badge"
-import {  TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
 import FooterCall from "../footer-call"
+
 const socket: Socket = io("https://192.168.239.132:3001", {
   secure: true,
   rejectUnauthorized: false,
@@ -21,8 +22,6 @@ export default function Patient() {
   const [streamError, setStreamError] = useState<string | null>(null)
   const [isMuted, setIsMuted] = useState<boolean>(false)
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false)
-  const [isRecording, setIsRecording] = useState<boolean>(true)
-  const [recordingTime, setRecordingTime] = useState<string>("10:32")
 
   const hasRequestedCall = useRef<boolean>(false)
   const localStreamRef = useRef<MediaStream | null>(null)
@@ -291,93 +290,58 @@ export default function Patient() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-[100vh]  w-full  shadow-md overflow-hidden bg-[#1E1F22]">
+      <div className="flex flex-col h-screen w-full overflow-hidden bg-[#1E1F22]">
         {/* Header */}
-        <HeaderCall/>
+        <HeaderCall />
+
         {/* Main content */}
-        <div className="flex flex-1 overflow-hidden bg-[#1E1F22]">
-          {/* Video area */}
-          <div className="flex-1 flex">
-            {/* Fix the waiting view to properly show local video */}
-            {isWaiting ? (
-              <div className="flex-1 flex items-center justify-center ">
-                <div className="text-center">
-                  <div className="w-full max-w-md mx-auto mb-4">
-                    <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
-                      <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                  <p className="text-main font-medium">Waiting for a doctor...</p>
-                  <Badge variant="outline" className="mt-2 text-xs h-[40px] bg-main mx-2">
-                    Connection state: {connectionState}
-                  </Badge>
-                  {streamError && (
-                    <Badge variant="destructive" className="mt-2 h-[40px] bg-main">
-                      Error: {streamError}
-                    </Badge>
-                  )}
-                </div>
+        <div className="flex-1 p-4 flex items-center justify-center">
+          {isWaiting ? (
+            <div className="text-center max-w-md">
+              <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-4">
+                <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
               </div>
-            ) : isCallStarted ? (
-              <div className="flex-1 grid grid-cols-2 gap-0">
-                {/* Doctor's video */}
-                <div className="relative flex items-center justify-center  p-4">
-                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
-                    Jane Cooper
-                  </Badge>
-                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                  </div>
+              <p className="text-white font-medium">Waiting for a doctor...</p>
+              {streamError && <p className="mt-4 text-red-500">Error: {streamError}</p>}
+            </div>
+          ) : isCallStarted ? (
+            <div className="grid grid-cols-2 gap-4 w-full max-w-6xl">
+              {/* Doctor's video */}
+              <div className="relative">
+                <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
+                  <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
                 </div>
-
-                {/* Patient's video (self view) */}
-                <div className="relative flex items-center justify-center  p-4">
-                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
-                    You
-                  </Badge>
-                  <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
-                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                  </div>
-
-                  {isRecording && (
-                    <Badge variant="destructive" className="absolute bottom-8 flex items-center bg-main gap-1">
-                      <span className="mr-1">REC</span>
-                      <span>{recordingTime}</span>
-                    </Badge>
-                  )}
-                </div>
+                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">Dr Giraffe</Badge>
               </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center ">
-                <div className="text-center">
-                  <div className="w-full max-w-md mx-auto mb-4">
-                    <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
-                      <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                  <p className="text-main font-medium">Connecting to doctor...</p>
-                  <Badge variant="outline" className="mt-2 text-xs bg-white">
-                    Connection state: {connectionState}
-                  </Badge>
-                  {streamError && (
-                    <Badge variant="destructive" className="mt-2">
-                      Error: {streamError}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Sidebar */}
-        
+              {/* Patient's video (self view) */}
+              <div className="relative">
+                <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
+                  <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                </div>
+                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">You</Badge>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center max-w-md">
+              <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-4">
+                <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+              </div>
+              <p className="text-white font-medium">Connecting to doctor...</p>
+              {streamError && <p className="mt-4 text-red-500">Error: {streamError}</p>}
+            </div>
+          )}
         </div>
 
-      
         {/* Footer with controls */}
-<FooterCall isMuted={isMuted} isVideoOff={isVideoOff} toggleVideo={toggleVideo} toggleMute={toggleMute} endCall={endCall}/>
+        <FooterCall
+          isMuted={isMuted}
+          isVideoOff={isVideoOff}
+          toggleVideo={toggleVideo}
+          toggleMute={toggleMute}
+          endCall={endCall}
+        />
       </div>
     </TooltipProvider>
   )
 }
-  
