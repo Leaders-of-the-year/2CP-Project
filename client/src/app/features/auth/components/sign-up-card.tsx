@@ -1,7 +1,5 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
@@ -13,11 +11,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
-
-// Define the steps in the sign-up process
 type Step = "email" | "identity" | "password" | "phone" | "terms"
-
-// Define the form data structure
 interface SignUpFormData {
   email: string
   gender: "male" | "female" | ""
@@ -28,14 +22,11 @@ interface SignUpFormData {
   phoneNumber: string
   acceptTerms: boolean
 }
-
 export default function SignUpForm() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState<Step>("email")
   const [showPassword, setShowPassword] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState<"Weak" | "Medium" | "Strong">("Weak")
-
-  // Initialize form data
   const [formData, setFormData] = useState<SignUpFormData>({
     email: "",
     gender: "",
@@ -46,40 +37,27 @@ export default function SignUpForm() {
     phoneNumber: "",
     acceptTerms: false,
   })
-
-  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-
-    // Check password strength when password changes
     if (name === "password") {
       const strength = calculatePasswordStrength(value)
       setPasswordStrength(strength)
     }
   }
-
-  // Handle checkbox changes
   const handleCheckboxChange = (checked: boolean) => {
     setFormData((prev) => ({ ...prev, acceptTerms: checked }))
   }
-
-  // Handle radio button changes
   const handleGenderChange = (value: string) => {
     setFormData((prev) => ({ ...prev, gender: value as "male" | "female" }))
   }
-
-  // Calculate password strength
   const calculatePasswordStrength = (password: string): "Weak" | "Medium" | "Strong" => {
     if (password.length < 6) return "Weak"
     if (password.length < 10) return "Medium"
     return "Strong"
   }
-
-  // Sign-up mutation
   const signUpMutation = useMutation({
     mutationFn: async (data: SignUpFormData) => {
-      // In a real app, this would be an API call to your registration endpoint
       return new Promise((resolve) => {
         setTimeout(() => {
           console.log("Sign up data:", data)
@@ -88,25 +66,18 @@ export default function SignUpForm() {
       })
     },
     onSuccess: () => {
-      // Redirect to success page or login
       router.push("/sign-in")
     },
   })
-
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (currentStep === "terms") {
       signUpMutation.mutate(formData)
     } else {
-      // Move to the next step
       const nextStep = getNextStep(currentStep)
       setCurrentStep(nextStep)
     }
   }
-
-  // Get the next step in the flow
   const getNextStep = (step: Step): Step => {
     switch (step) {
       case "email":
@@ -121,8 +92,6 @@ export default function SignUpForm() {
         return "terms"
     }
   }
-
-  // Handle going back to the previous step
   const handlePrevious = () => {
     switch (currentStep) {
       case "identity":
@@ -139,8 +108,6 @@ export default function SignUpForm() {
         break
     }
   }
-
-  // Determine if the current step is valid and the next button should be enabled
   const isStepValid = () => {
     switch (currentStep) {
       case "email":
@@ -157,14 +124,11 @@ export default function SignUpForm() {
         return false
     }
   }
-
-  // Animation variants for card transitions
   const cardVariants = {
     hidden: { opacity: 0, x: 100 },
     visible: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: -100 },
   }
-
   return (
     <div className="w-full">
       <AnimatePresence mode="wait">
@@ -186,12 +150,10 @@ export default function SignUpForm() {
               <span>Previous step</span>
             </button>
           )}
-
-          {/* Email Step */}
+          {}
           {currentStep === "email" && (
             <div className="space-y-6">
               <h1 className="text-3xl font-semibold text-center text-slate-800">Sign up</h1>
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-teal-600 font-medium">
                   Enter your email address
@@ -209,17 +171,14 @@ export default function SignUpForm() {
               </div>
             </div>
           )}
-
-          {/* Identity Step */}
+          {}
           {currentStep === "identity" && (
             <div className="space-y-6">
               <div className="flex items-center text-teal-600 gap-2">
                 <User size={18} />
                 <span>{formData.email}</span>
               </div>
-
               <h2 className="text-xl font-semibold text-slate-800">Enter your identity</h2>
-
               <div>
                 <Label className="text-slate-700 mb-2 block">identity</Label>
                 <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4 mb-4">
@@ -237,7 +196,6 @@ export default function SignUpForm() {
                   </div>
                 </RadioGroup>
               </div>
-
               <div className="space-y-4">
                 <div>
                   <Input
@@ -250,7 +208,6 @@ export default function SignUpForm() {
                     required
                   />
                 </div>
-
                 <div>
                   <Input
                     id="lastName"
@@ -263,7 +220,6 @@ export default function SignUpForm() {
                   />
                 </div>
               </div>
-
               <div>
                 <Label htmlFor="dateOfBirth" className="text-slate-800 font-medium">
                   Date of birth
@@ -281,16 +237,13 @@ export default function SignUpForm() {
               </div>
             </div>
           )}
-
-          {/* Password Step */}
+          {}
           {currentStep === "password" && (
             <div className="space-y-6">
               <div className="flex items-center text-teal-600 gap-2">
                 <Lock size={18} />
               </div>
-
               <h2 className="text-xl font-semibold text-slate-800">Set your password</h2>
-
               <div className="space-y-2">
                 <div className="relative">
                   <Input
@@ -316,7 +269,6 @@ export default function SignUpForm() {
                     </div>
                   )}
                 </div>
-
                 {formData.password && (
                   <div
                     className={cn(
@@ -332,16 +284,13 @@ export default function SignUpForm() {
               </div>
             </div>
           )}
-
-          {/* Phone Step */}
+          {}
           {currentStep === "phone" && (
             <div className="space-y-6">
               <div className="flex items-center text-teal-600 gap-2">
                 <Phone size={18} />
               </div>
-
               <h2 className="text-xl font-semibold text-slate-800">Enter your phone number</h2>
-
               <div className="space-y-2">
                 <Input
                   id="phoneNumber"
@@ -353,7 +302,6 @@ export default function SignUpForm() {
                   className="border-slate-200"
                   required
                 />
-
                 <p className="text-xs text-slate-500">
                   To confirm this number, we will send you a 3-digit code via SMS. This number will be used for
                   two-factor authentication and appointment reminders.
@@ -361,12 +309,10 @@ export default function SignUpForm() {
               </div>
             </div>
           )}
-
-          {/* Terms Step */}
+          {}
           {currentStep === "terms" && (
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-slate-800">Terms of Use and Personal Data Protection Policy</h2>
-
               <p className="text-sm text-slate-600">
                 To create an account, please accept the{" "}
                 <a href="#" className="text-teal-600">
@@ -374,7 +320,6 @@ export default function SignUpForm() {
                 </a>
                 .
               </p>
-
               <div className="flex items-start space-x-2">
                 <Checkbox id="terms" checked={formData.acceptTerms} onCheckedChange={handleCheckboxChange} />
                 <Label htmlFor="terms" className="text-sm">
@@ -383,10 +328,8 @@ export default function SignUpForm() {
               </div>
             </div>
           )}
-
           <div className="mt-8">
             <hr className="mb-6 border-slate-200" />
-
             <Button
               type="button"
               onClick={handleSubmit}
@@ -404,3 +347,4 @@ export default function SignUpForm() {
     </div>
   )
 }
+    

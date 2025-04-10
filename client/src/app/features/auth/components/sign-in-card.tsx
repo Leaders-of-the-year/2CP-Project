@@ -1,25 +1,20 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
-
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-
 interface SignInCredentials {
   email: string
   password: string
   userType: "doctor" | "patient"
   rememberMe: boolean
 }
-
 export default function SignInForm() {
   const router = useRouter()
   const [credentials, setCredentials] = useState<SignInCredentials>({
@@ -28,14 +23,10 @@ export default function SignInForm() {
     userType: "doctor",
     rememberMe: false,
   })
-
-  // Simulated sign-in mutation with React Query
   const signInMutation = useMutation({
     mutationFn: async (credentials: SignInCredentials) => {
-      // In a real app, this would be an API call to your authentication endpoint
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          // Simulate successful authentication
           if (credentials.email && credentials.password) {
             resolve({
               success: true,
@@ -51,33 +42,26 @@ export default function SignInForm() {
       })
     },
     onSuccess: (data) => {
-      // Handle successful sign-in
       console.log("Sign in successful:", data)
-      // Redirect to dashboard or appropriate page
       router.push("/dashboard")
     },
     onError: (error) => {
-      // Handle sign-in error
       console.error("Sign in failed:", error)
     },
   })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     signInMutation.mutate(credentials)
   }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setCredentials((prev) => ({ ...prev, [name]: value }))
   }
-
   return (
     <div className=" backdrop-blur-sm rounded-3xl p-8 shadow-lg overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-teal-100/50 z-0"></div>
       <div className="relative z-10">
         <h1 className="text-3xl font-semibold text-center mb-8 text-slate-800">Sign in</h1>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-teal-600 font-medium">
@@ -94,7 +78,6 @@ export default function SignInForm() {
               required
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="password" className="text-teal-600 font-medium">
               Password
@@ -115,7 +98,6 @@ export default function SignInForm() {
               </a>
             </div>
           </div>
-
           <RadioGroup
             value={credentials.userType}
             onValueChange={(value) => setCredentials((prev) => ({ ...prev, userType: value as "doctor" | "patient" }))}
@@ -134,7 +116,6 @@ export default function SignInForm() {
               </Label>
             </div>
           </RadioGroup>
-
           <div className="flex items-center space-x-2">
             <Checkbox
               id="remember"
@@ -145,7 +126,6 @@ export default function SignInForm() {
               Remember me
             </Label>
           </div>
-
           <Button
             type="submit"
             className={cn(

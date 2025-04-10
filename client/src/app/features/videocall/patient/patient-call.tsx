@@ -1,18 +1,12 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
-import {
-  Info,
-  Users,
-  MessageSquare,
-  Subtitles,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {  TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
 import FooterCall from "../footer-call"
-const socket: Socket = io("https://192.168.43.25:3001", {
+const socket: Socket = io("https://192.168.239.132:3001", {
   secure: true,
   rejectUnauthorized: false,
   query: { role: "patient" },
@@ -297,16 +291,16 @@ export default function Patient() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-[100vh]  w-full  shadow-md overflow-hidden">
+      <div className="flex flex-col h-[100vh]  w-full  shadow-md overflow-hidden bg-[#1E1F22]">
         {/* Header */}
         <HeaderCall/>
         {/* Main content */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden bg-[#1E1F22]">
           {/* Video area */}
           <div className="flex-1 flex">
             {/* Fix the waiting view to properly show local video */}
             {isWaiting ? (
-              <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
+              <div className="flex-1 flex items-center justify-center ">
                 <div className="text-center">
                   <div className="w-full max-w-md mx-auto mb-4">
                     <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
@@ -327,7 +321,7 @@ export default function Patient() {
             ) : isCallStarted ? (
               <div className="flex-1 grid grid-cols-2 gap-0">
                 {/* Doctor's video */}
-                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
+                <div className="relative flex items-center justify-center  p-4">
                   <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
                     Jane Cooper
                   </Badge>
@@ -337,7 +331,7 @@ export default function Patient() {
                 </div>
 
                 {/* Patient's video (self view) */}
-                <div className="relative flex items-center justify-center bg-gradient-to-r from-[#d6e0e4] to-[#c5d2d8] p-4">
+                <div className="relative flex items-center justify-center  p-4">
                   <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
                     You
                   </Badge>
@@ -354,7 +348,7 @@ export default function Patient() {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4]">
+              <div className="flex-1 flex items-center justify-center ">
                 <div className="text-center">
                   <div className="w-full max-w-md mx-auto mb-4">
                     <div className="aspect-video border-4 border-white overflow-hidden bg-gray-100">
@@ -376,55 +370,7 @@ export default function Patient() {
           </div>
 
           {/* Sidebar */}
-          <div className="w-16 border-l flex flex-col items-center py-4 bg-white">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-10 h-10 mb-6 rounded-full">
-                  <Info className="h-5 w-5 text-main" />
-                  <span className="sr-only">Info</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Info</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-10 h-10 mb-6 rounded-full">
-                  <Users className="h-5 w-5 text-main" />
-                  <span className="sr-only">Persons</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Persons</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-10 h-10 mb-6 rounded-full">
-                  <MessageSquare className="h-5 w-5 text-main" />
-                  <span className="sr-only">Chat</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Chat</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-10 h-10 mb-6 rounded-full">
-                  <Subtitles className="h-5 w-5 text-main" />
-                  <span className="sr-only">Subtitle</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Subtitle</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+        
         </div>
 
       
