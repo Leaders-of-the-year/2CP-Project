@@ -348,7 +348,7 @@ export default function Doctor() {
               <div className="flex-1 grid grid-cols-2 gap-0">
                 {/* Patient's video */}
                 <div className="relative flex items-center justify-center bg-gradient-to-r from-[#e8eef0] to-[#d6e0e4] p-4">
-                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main">
+                  <Badge variant="secondary" className="absolute top-3 left-3 bg-main text-white">
                     Jane Cooper
                   </Badge>
                   <div className="w-full aspect-video border-4 border-white overflow-hidden bg-gray-100">
@@ -366,7 +366,7 @@ export default function Doctor() {
                   </div>
 
                   {isRecording && (
-                    <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
+                    <Badge variant="destructive" className="absolute bottom-8 flex bg-main items-center gap-1">
                       <span className="mr-1">REC</span>
                       <span>{recordingTime}</span>
                     </Badge>
@@ -386,7 +386,7 @@ export default function Doctor() {
                   <Button onClick={acceptPatient} variant="default" className="bg-main hover:bg-main/90 text-white h-[40px]">
                     Accept Patient
                   </Button>
-                  <Badge variant="outline" className="mt-2 text-xs bg-main text-alt black block mx-auto">
+                  <Badge variant="outline" className="mt-2 text-xs bg-main text-alt  block mx-auto">
                     Connection state: {connectionState}
                   </Badge>
                   {streamError && (

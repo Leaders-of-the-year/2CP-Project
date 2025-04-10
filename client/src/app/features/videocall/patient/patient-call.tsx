@@ -375,7 +375,7 @@ export default function Patient() {
                   </div>
 
                   {isRecording && (
-                    <Badge variant="destructive" className="absolute bottom-8 flex items-center gap-1">
+                    <Badge variant="destructive" className="absolute bottom-8 flex items-center bg-main gap-1">
                       <span className="mr-1">REC</span>
                       <span>{recordingTime}</span>
                     </Badge>
