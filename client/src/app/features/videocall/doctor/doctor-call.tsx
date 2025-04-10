@@ -383,10 +383,10 @@ export default function Doctor() {
                     </div>
                   </div>
                   <p className="text-main font-medium mb-2">Patient waiting: {waitingPatientId}</p>
-                  <Button onClick={acceptPatient} variant="default" className="bg-main hover:bg-main/90 text-white">
+                  <Button onClick={acceptPatient} variant="default" className="bg-main hover:bg-main/90 text-white h-[40px]">
                     Accept Patient
                   </Button>
-                  <Badge variant="outline" className="mt-2 text-xs bg-main text-black block mx-auto">
+                  <Badge variant="outline" className="mt-2 text-xs bg-main text-alt black block mx-auto">
                     Connection state: {connectionState}
                   </Badge>
                   {streamError && (
