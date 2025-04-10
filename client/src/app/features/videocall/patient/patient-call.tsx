@@ -14,13 +14,11 @@ import {
   Hand,
   BarChart,
   MoreHorizontal,
-  Plus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
+import HeaderCall from "../header-call"
 const socket: Socket = io("https://192.168.43.25:3001", {
   secure: true,
   rejectUnauthorized: false,
@@ -308,27 +306,7 @@ export default function Patient() {
     <TooltipProvider>
       <div className="flex flex-col h-[100vh]  w-full  shadow-md overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between p-4 border-b bg-main">
-          <h1 className="text-xl font-semibold text-alt">Individual Counselling</h1>
-          <div className="flex items-center gap-2">
-            <Button variant="default" className="bg-main hover:bg-main/90 text-white">
-              <Plus className="mr-2 h-4 w-4" />
-              <span className="text-sm">Add Person</span>
-            </Button>
-            <div className="flex items-center gap-1 bg-white rounded-full px-2 py-1 border border-gray-200">
-              <div className="flex -space-x-2">
-                <Avatar className="h-6 w-6 border-2 border-white">
-                  <AvatarFallback className="bg-main text-white text-xs">J</AvatarFallback>
-                </Avatar>
-                <Avatar className="h-6 w-6 border-2 border-white">
-                  <AvatarFallback className="bg-second text-white text-xs">D</AvatarFallback>
-                </Avatar>
-              </div>
-              <span className="text-sm ml-1 text-main">2 Persons</span>
-            </div>
-          </div>
-        </header>
-
+        <HeaderCall/>
         {/* Main content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Video area */}
