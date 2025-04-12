@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/app/providers"
 
 // Define the steps in the sign-up process
 type Step = "email" | "userType" | "identity" | "specialInfo" | "password" | "phone" | "terms"
@@ -49,12 +50,63 @@ interface SignUpFormData {
   // Patient fields
   address?: string
   medical_history?: string
+
+  // Medical info fields
+  blood_type?: string
+  allergies?: string
+  height?: string
+  weight?: string
+  heart_rate?: string
+  body_temperature?: string
+  glucose?: string
+}
+
+// Format the data for the API
+const formatDataForApi = (data: SignUpFormData) => {
+  // Create the medical_info object for patient type
+  const medical_info =
+    data.type === "patient"
+      ? {
+          blood_type: "B+", // Default or collected from form
+          allergies: "None", // Default or collected from form
+          height: "172 cm", // Default or collected from form
+          weight: "65 kg", // Default or collected from form
+          heart_rate: "78 bpm", // Default or collected from form
+          body_temperature: "98.6 F", // Default or collected from form
+          glucose: "88 mg/dL", // Default or collected from form
+        }
+      : undefined
+
+  return {
+    type: data.type,
+    username: data.username,
+    email: data.email,
+    password: data.password,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    phone_number: data.phone_number,
+    gender: data.gender,
+    ...(data.type === "patient" && {
+      address: data.address,
+      medical_info,
+    }),
+    ...(data.type === "doctor_special" && {
+      doctor_number: data.doctor_number,
+      specialty_name: data.specialty_name,
+      description: data.description,
+    }),
+    ...(data.type === "doctor_general" && {
+      doctor_number: data.doctor_number,
+      specialization: data.specialization,
+      years_of_experience: data.years_of_experience,
+    }),
+  }
 }
 
 // API client function to register a user
-const registerUser = async (userData: SignUpFormData) => {
-  console.log("final data to submit :", userData);
-  const response = await fetch("http://localhost:5000/api/auth/register", {
+const registerUser = async (userData: any) => {
+  console.log("final data to submit:", userData)
+  const response = await fetch("https://192.168.74.215:3001/api/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -73,6 +125,7 @@ const registerUser = async (userData: SignUpFormData) => {
 export default function SignUpForm() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { login } = useAuth()
   const [currentStep, setCurrentStep] = useState<Step>("email")
   const [showPassword, setShowPassword] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState<"Weak" | "Medium" | "Strong">("Weak")
@@ -90,34 +143,41 @@ export default function SignUpForm() {
     acceptTerms: false,
     gender: "",
     dateOfBirth: "",
+    blood_type: "B+",
+    allergies: "None",
+    height: "172 cm",
+    weight: "65 kg",
+    heart_rate: "78 bpm",
+    body_temperature: "98.6 F",
+    glucose: "88 mg/dL",
   })
 
   // Format the data for the API
-  const formatDataForApi = (data: SignUpFormData) => {
-    return {
-      type: data.type,
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      ...(data.type === "doctor_special" && {
-        doctor_number: data.doctor_number,
-        specialty_name: data.specialty_name,
-        description: data.description,
-      }),
-      ...(data.type === "doctor_general" && {
-        doctor_number: data.doctor_number,
-        specialization: data.specialization,
-        years_of_experience: data.years_of_experience,
-      }),
-      ...(data.type === "patient" && {
-        phone_number: data.phone_number,
-        address: data.address,
-        medical_history: data.medical_history,
-      }),
-    }
-  }
+  // const formatDataForApi = (data: SignUpFormData) => {
+  //   return {
+  //     type: data.type,
+  //     username: data.username,
+  //     email: data.email,
+  //     password: data.password,
+  //     first_name: data.first_name,
+  //     last_name: data.last_name,
+  //     ...(data.type === "doctor_special" && {
+  //       doctor_number: data.doctor_number,
+  //       specialty_name: data.specialty_name,
+  //       description: data.description,
+  //     }),
+  //     ...(data.type === "doctor_general" && {
+  //       doctor_number: data.doctor_number,
+  //       specialization: data.specialization,
+  //       years_of_experience: data.years_of_experience,
+  //     }),
+  //     ...(data.type === "patient" && {
+  //       phone_number: data.phone_number,
+  //       address: data.address,
+  //       medical_history: data.medical_history,
+  //     }),
+  //   }
+  // }
 
   // React Query mutation hook
   const signUpMutation = useMutation({
@@ -138,8 +198,14 @@ export default function SignUpForm() {
         variant: "default",
       })
 
-      // Redirect to sign-in page
-      router.push("/login")
+      // If the API returns a token and user, log them in directly
+      if (data.token && data.user) {
+        login(data.token, data.user)
+        router.push("/dashboard")
+      } else {
+        // Otherwise redirect to sign-in page
+        router.push("/login")
+      }
     },
     onError: (error: Error) => {
       console.error("Registration error:", error.message)
@@ -200,6 +266,10 @@ export default function SignUpForm() {
       years_of_experience: undefined,
       address: undefined,
       medical_history: undefined,
+      blood_type: undefined,
+      allergies: undefined,
+      height: undefined,
+      weight: undefined,
     }))
     if (errorMessage) setErrorMessage(null)
   }
@@ -217,7 +287,7 @@ export default function SignUpForm() {
     setErrorMessage(null)
 
     if (currentStep === "terms") {
-      console.log("int terms",formData)
+      console.log("int terms", formData)
       signUpMutation.mutate(formData)
     } else {
       // Move to the next step
@@ -287,13 +357,13 @@ export default function SignUpForm() {
         } else if (formData.type === "doctor_general") {
           return !!formData.doctor_number && !!formData.specialization && !!formData.years_of_experience
         } else if (formData.type === "patient") {
-          return !!formData.address && !!formData.medical_history
+          return !!formData.address
         }
         return false
       case "password":
         return formData.password.length >= 6
       case "phone":
-        return /^\d{10,15}$/.test(formData.phone_number.replace(/\D/g, ""))
+        return /^\d{10,15}$/.test(formData.phone_number.replace(/\D/g, "")) || formData.phone_number.includes("-")
       case "terms":
         return formData.acceptTerms
       default:
@@ -655,6 +725,76 @@ export default function SignUpForm() {
                       className="border-slate-200 min-h-[100px]"
                       required
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="blood_type" className="text-slate-700 mb-2 block">
+                        Blood Type
+                      </Label>
+                      <Select
+                        value={formData.blood_type}
+                        onValueChange={(value) => handleSelectChange("blood_type", value)}
+                      >
+                        <SelectTrigger className="border-slate-200">
+                          <SelectValue placeholder="Select blood type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="A+">A+</SelectItem>
+                          <SelectItem value="A-">A-</SelectItem>
+                          <SelectItem value="B+">B+</SelectItem>
+                          <SelectItem value="B-">B-</SelectItem>
+                          <SelectItem value="AB+">AB+</SelectItem>
+                          <SelectItem value="AB-">AB-</SelectItem>
+                          <SelectItem value="O+">O+</SelectItem>
+                          <SelectItem value="O-">O-</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="allergies" className="text-slate-700 mb-2 block">
+                        Allergies
+                      </Label>
+                      <Input
+                        id="allergies"
+                        name="allergies"
+                        placeholder="None or list allergies"
+                        value={formData.allergies || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="height" className="text-slate-700 mb-2 block">
+                        Height
+                      </Label>
+                      <Input
+                        id="height"
+                        name="height"
+                        placeholder="e.g., 172 cm"
+                        value={formData.height || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="weight" className="text-slate-700 mb-2 block">
+                        Weight
+                      </Label>
+                      <Input
+                        id="weight"
+                        name="weight"
+                        placeholder="e.g., 65 kg"
+                        value={formData.weight || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

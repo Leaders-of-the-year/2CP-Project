@@ -1,4 +1,5 @@
 "use client"
+
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -9,23 +10,29 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/app/providers"
+import { toast } from "@/hooks/use-toast"
+
 interface SignInCredentials {
   email: string
   password: string
   // userType: "doctor" | "patient"
   // rememberMe: boolean
 }
+
 export default function SignInForm() {
   const router = useRouter()
+  const { login } = useAuth()
   const [credentials, setCredentials] = useState<SignInCredentials>({
     email: "",
     password: "",
     // userType: "doctor",
     // rememberMe: false,
   })
+  
   const signInMutation = useMutation({
     mutationFn: async ({ email, password }: SignInCredentials) => {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("https://192.168.74.215:3001/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,10 +49,22 @@ export default function SignInForm() {
     },
     onSuccess: (data) => {
       console.log("Sign in successful:", data)
+      // Store the token and user data in the auth context
+      
+      login(data.token, data.user)
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back!",
+      })
       router.push("/dashboard")
     },
     onError: (error) => {
       console.error("Sign in failed:", error)
+      toast({
+        title: "Sign in failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      })
     },
   })
   
@@ -53,6 +72,7 @@ export default function SignInForm() {
     e.preventDefault()
     signInMutation.mutate(credentials)
   }
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
   
