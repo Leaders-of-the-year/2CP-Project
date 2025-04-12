@@ -20,7 +20,7 @@ export function useApi() {
 
     // Add authorization header if token exists
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`
+      headers["Authorization"] = `${token}`
     }
 
     // Prepare request options
