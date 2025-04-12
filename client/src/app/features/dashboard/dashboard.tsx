@@ -43,7 +43,7 @@ function DashboardContent() {
   // Fetch patient profile data from the specified endpoint
   const { data, isLoading, error } = useQuery({
     queryKey: ["patientProfile"],
-    queryFn: () => fetchWithAuth("https://192.168.74.215:5000/api/dashboard_patients/patient/profile"),
+    queryFn: () => fetchWithAuth("https://192.168.74.215:3001/api/dashboard_patients/patient/profile"),
     // Only run this query if we have a token
     enabled: !!token,
   })
