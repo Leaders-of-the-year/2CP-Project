@@ -15,26 +15,57 @@ import { useAuth } from "@/app/providers"
 import { useApi } from "@/hooks/useApi"
 import { useQuery } from "@tanstack/react-query"
 
+// Define the patient profile data structure
+interface PatientProfile {
+  type: string
+  username: string
+  email: string
+  first_name: string
+  last_name: string
+  phone_number: string
+  address: string
+  gender: string
+  medical_info: {
+    blood_type: string
+    allergies: string
+    height: string
+    weight: string
+    heart_rate: string
+    body_temperature: string
+    glucose: string
+  }
+}
+
 function DashboardContent() {
   const { user, token } = useAuth()
   const { fetchWithAuth } = useApi()
-  
-  // Example of how to fetch data with the token
-  // Replace with your actual API endpoint
+
+  // Fetch patient profile data from the specified endpoint
   const { data, isLoading, error } = useQuery({
-    queryKey: ['userData'],
-    queryFn: () => {
-      // If you have a real API endpoint, use this:
-      // return fetchWithAuth('/api/user/profile')
-      
-      // For now, we'll use mock data
-      return Promise.resolve(mockUserData)
-    },
+    queryKey: ["patientProfile"],
+    queryFn: () => fetchWithAuth("http://localhost:5000/api/dashboard_patients/patient/profile"),
     // Only run this query if we have a token
-    enabled: !!token
+    enabled: !!token,
   })
 
-  const userData = data || mockUserData
+  // If we have data from the API, map it to the format our components expect
+  // Otherwise, fall back to mock data
+  const userData = data
+    ? {
+        ...mockUserData,
+        name: `${data.first_name} ${data.last_name}`,
+        gender: data.gender,
+        bloodType: data.medical_info.blood_type,
+        allergies: data.medical_info.allergies,
+        height: data.medical_info.height,
+        weight: data.medical_info.weight,
+        vitalSigns: {
+          heartRate: data.medical_info.heart_rate.split(" ")[0],
+          temperature: data.medical_info.body_temperature.split(" ")[0],
+          glucose: data.medical_info.glucose.split(" ")[0],
+        },
+      }
+    : mockUserData
 
   if (isLoading) {
     return <div className="flex h-full items-center justify-center">Loading...</div>
@@ -50,17 +81,22 @@ function DashboardContent() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="md:col-span-1 ">
-          <ProfileCard 
-            name={user?.username || userData.name} 
-            age={userData.age} 
-            imageUrl={userData.imageUrl} 
+          <ProfileCard
+            name={data?.username || user?.username || userData.name}
+            age={userData.age}
+            imageUrl={userData.imageUrl}
           />
         </div>
 
         <div className="md:col-span-3">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <VitalSignCard type="heart" value={userData.vitalSigns.heartRate} unit="bpm" title="Heart Rate" />
-            <VitalSignCard type="temperature" value={userData.vitalSigns.temperature} unit="°C" title="Body Temperature" />
+            <VitalSignCard
+              type="temperature"
+              value={userData.vitalSigns.temperature}
+              unit="°C"
+              title="Body Temperature"
+            />
             <VitalSignCard type="glucose" value={userData.vitalSigns.glucose} unit="mg/dl" title="Glucose" />
           </div>
         </div>
@@ -73,7 +109,7 @@ function DashboardContent() {
           allergies={userData.allergies}
           height={userData.height}
           weight={userData.weight}
-          patientId={user?.id || userData.id}
+          patientId={data?.id || user?.id || userData.id}
           lastConsultation={userData.lastConsultation}
         />
 
