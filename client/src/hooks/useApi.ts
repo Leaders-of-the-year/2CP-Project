@@ -5,15 +5,15 @@ import { useAuth } from "@/app/providers"
 type FetchOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
   body?: any
-  headers?: Record<string, string>
+  headers?: Record<string, string> // This allows any string keys
 }
 
 export function useApi() {
   const { token } = useAuth()
 
   const fetchWithAuth = async (url: string, options: FetchOptions = {}) => {
-    // Prepare headers with authentication token
-    const headers = {
+    // Create a new headers object that can have any string keys
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...options.headers,
     }
