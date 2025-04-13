@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-
 import { Badge } from "@/components/ui/badge"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
@@ -35,7 +34,6 @@ export default function PatientCallPage() {
       const interval = setInterval(() => {
         setWaitTime((prev) => prev + 1)
       }, 1000)
-
       setWaitTimeInterval(interval)
     }
 
@@ -77,7 +75,6 @@ export default function PatientCallPage() {
         const interval = setInterval(() => {
           setWaitTime((prev) => prev + 1)
         }, 1000)
-
         setWaitTimeInterval(interval)
       }
 

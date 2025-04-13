@@ -35,8 +35,7 @@ export function useSocketIO(role: "doctor" | "patient") {
       console.log(`🔌 Connected to server with socket ID: ${socketIo.id} and role: ${role}`)
       setIsConnected(true)
 
-      // Only register as doctor on initial connection if role is doctor
-      // We'll handle explicit registration separately
+      // Only get initial data on connection if role is doctor
       if (role === "doctor") {
         socketIo.emit("get-waiting-patients")
         socketIo.emit("get-doctors-list")

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-
 import { Badge } from "@/components/ui/badge"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
@@ -36,6 +35,7 @@ export default function DoctorCallPage() {
   useEffect(() => {
     if (callStatus === "connected" && currentPatientId) {
       setIsCallStarted(true)
+
       // Create and send offer to patient
       createAndSendOffer()
 
