@@ -32,7 +32,7 @@ export default function SignInForm() {
   
   const signInMutation = useMutation({
     mutationFn: async ({ email, password }: SignInCredentials) => {
-      const response = await fetch(`${SERVER_URL}}/api/auth/register`, {
+      const response = await fetch(`${process.env.SERVER_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

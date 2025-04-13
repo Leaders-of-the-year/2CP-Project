@@ -43,10 +43,33 @@ function DashboardContent() {
   // Fetch patient profile data from the specified endpoint
   const { data, isLoading, error } = useQuery({
     queryKey: ["patientProfile"],
-    queryFn: () => fetchWithAuth("https://192.168.74.215:3001/api/dashboard_patients/patient/profile"),
+    queryFn: () => fetchWithAuth(`${process.env.SERVER_URL}/api/dashboard_patients/patient/profile`),
     // Only run this query if we have a token
     enabled: !!token,
   })
+  if (isLoading) {
+    return <div>Loading...</div>; // Show loading state
+  }
+  
+  if (error) {
+    return <div>Error loading data</div>; // Show error state
+  }
+  
+  // Now you can safely use the data
+  console.log("aymen ", data, typeof data, Object.keys(data));
+  const name = `${data.patient.first_name} ${data.patient.last_name}`;
+const gender = data.patient.gender;
+const bloodType = data.patient.medical_info.blood_type;
+const allergies = data.patient.medical_info.allergies;
+const height = data.patient.medical_info.height;
+const weight = data.patient.medical_info.weight;
+
+console.log("Name:", name);
+console.log("Gender:", gender);
+console.log("Blood Type:", bloodType);
+console.log("Allergies:", allergies);
+console.log("Height:", height);
+console.log("Weight:", weight);
 
   // If we have data from the API, map it to the format our components expect
   // Otherwise, fall back to mock data
@@ -55,14 +78,14 @@ function DashboardContent() {
         ...mockUserData,
         name: `${data.first_name} ${data.last_name}`,
         gender: data.gender,
-        bloodType: data.medical_info.blood_type,
-        allergies: data.medical_info.allergies,
-        height: data.medical_info.height,
-        weight: data.medical_info.weight,
+        bloodType: data.patient.medical_info.blood_type,
+        allergies: data.patient.medical_info.allergies,
+        height: data.patient.medical_info.height,
+        weight: data.patient.medical_info.weight,
         vitalSigns: {
-          heartRate: data.medical_info.heart_rate.split(" ")[0],
-          temperature: data.medical_info.body_temperature.split(" ")[0],
-          glucose: data.medical_info.glucose.split(" ")[0],
+          heartRate: data.patient.medical_info.heart_rate.split(" ")[0],
+          temperature: data.patient.medical_info.body_temperature.split(" ")[0],
+          glucose: data.patient.medical_info.glucose.split(" ")[0],
         },
       }
     : mockUserData

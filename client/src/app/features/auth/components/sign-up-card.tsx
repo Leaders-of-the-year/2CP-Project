@@ -106,7 +106,7 @@ const formatDataForApi = (data: SignUpFormData) => {
 // API client function to register a user
 const registerUser = async (userData: any) => {
   console.log("final data to submit:", userData)
-  const response = await fetch("https://192.168.74.215:3001/api/auth/register", {
+  const response = await fetch(`${process.env.SERVER_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
