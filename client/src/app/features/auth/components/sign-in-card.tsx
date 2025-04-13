@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/app/providers"
 import { toast } from "@/hooks/use-toast"
-
+import { SERVER_URL } from "@/../../config"
 interface SignInCredentials {
   email: string
   password: string
@@ -32,7 +32,7 @@ export default function SignInForm() {
   
   const signInMutation = useMutation({
     mutationFn: async ({ email, password }: SignInCredentials) => {
-      const response = await fetch("https://192.168.74.215:3001/api/auth/register", {
+      const response = await fetch(`${SERVER_URL}}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

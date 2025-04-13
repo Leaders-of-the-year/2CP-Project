@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
@@ -6,8 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
 import FooterCall from "../footer-call"
-
-const socket: Socket = io("https://192.168.239.132:3001", {
+import { SERVER_URL } from "../../../../../config"
+const socket: Socket = io(SERVER_URL, {
   secure: true,
   rejectUnauthorized: false,
   query: { role: "patient" },
