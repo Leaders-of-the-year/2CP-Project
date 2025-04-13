@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
-import { SERVER_URL } from "../../config"
+import { SERVER_URL } from "../config"
 
 // Define types for our socket events
 export type Doctor = {
@@ -37,8 +37,11 @@ export function useSocketIO(role: "doctor" | "patient") {
 
       // Only get initial data on connection if role is doctor
       if (role === "doctor") {
+        console.log("🔄 Doctor requesting initial data")
         socketIo.emit("get-waiting-patients")
         socketIo.emit("get-doctors-list")
+      } else if (role === "patient") {
+        console.log("👨‍⚕️ Patient connected, ready to request call")
       }
     })
 
@@ -109,8 +112,11 @@ export function useSocketIO(role: "doctor" | "patient") {
   // Functions to interact with the socket
   const requestCall = () => {
     if (socket && role === "patient") {
+      console.log("📞 Emitting request-call event")
       socket.emit("request-call")
       setCallStatus("waiting")
+    } else {
+      console.warn("Cannot request call: socket not connected or not a patient")
     }
   }
 
@@ -121,17 +127,19 @@ export function useSocketIO(role: "doctor" | "patient") {
       if (!isRegisteredRef.current) {
         console.log("Doctor not registered yet, registering first...")
         socket.emit("register-doctor")
-        isRegisteredRef.current = true
 
         // Small delay to ensure registration completes before accepting
         setTimeout(() => {
           console.log("Now accepting patient:", patientId)
           socket.emit("accept-patient", patientId)
+          isRegisteredRef.current = true
         }, 500)
       } else {
         console.log("Doctor already registered, accepting patient:", patientId)
         socket.emit("accept-patient", patientId)
       }
+    } else {
+      console.warn("Cannot accept patient: socket not connected or not a doctor")
     }
   }
 

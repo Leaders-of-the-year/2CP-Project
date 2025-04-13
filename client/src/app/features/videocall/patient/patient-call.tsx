@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import HeaderCall from "../header-call"
-import FooterCall from "../footer-call"
+import HeaderCall from "@/components/videocall/header-call"
+import FooterCall from "@/components/videocall/footer-call"
 import { useSocketIO } from "@/hooks/use-socket-io"
 import { useWebRTC } from "@/hooks/use-webrtc"
 
@@ -25,24 +25,29 @@ export default function PatientCallPage() {
     remoteId: currentDoctorId,
   })
 
-  // Request a call when component mounts
+  // Request a call immediately when component mounts
   useEffect(() => {
-    if (callStatus === "idle") {
-      requestCall()
+    // Small delay to ensure socket is connected before requesting a call
+    const timer = setTimeout(() => {
+      if (socket && callStatus === "idle") {
+        console.log("🧑‍💼 Patient requesting to join waiting list")
+        requestCall()
 
-      // Start a timer to track waiting time
-      const interval = setInterval(() => {
-        setWaitTime((prev) => prev + 1)
-      }, 1000)
-      setWaitTimeInterval(interval)
-    }
+        // Start a timer to track waiting time
+        const interval = setInterval(() => {
+          setWaitTime((prev) => prev + 1)
+        }, 1000)
+        setWaitTimeInterval(interval)
+      }
+    }, 500)
 
     return () => {
+      clearTimeout(timer)
       if (waitTimeInterval) {
         clearInterval(waitTimeInterval)
       }
     }
-  }, [callStatus, requestCall])
+  }, [socket, callStatus, requestCall])
 
   // Update call status
   useEffect(() => {
@@ -110,6 +115,7 @@ export default function PatientCallPage() {
               </div>
               <p className="text-white font-medium mb-2">Waiting for a doctor...</p>
               <p className="text-gray-400 text-sm">Wait time: {formatWaitTime()}</p>
+              <p className="text-gray-400 text-xs mt-2">Status: {callStatus}</p>
               {streamError && <p className="mt-4 text-red-500">Error: {streamError}</p>}
             </div>
           ) : isCallStarted ? (

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import HeaderCall from "../header-call"
-import FooterCall from "../footer-call"
+import HeaderCall from "@/components/videocall/header-call"
+import FooterCall from "@/components/videocall/footer-call"
 import { useSocketIO } from "@/hooks/use-socket-io"
 import { useWebRTC } from "@/hooks/use-webrtc"
 
@@ -31,9 +31,20 @@ export default function DoctorCallPage() {
     remoteId: currentPatientId,
   })
 
+  // Ensure doctor is registered
+  useEffect(() => {
+    if (socket && !isRegistered()) {
+      console.log("👨‍⚕️ Registering doctor on call page")
+      socket.emit("register-doctor")
+    }
+  }, [socket, isRegistered])
+
   // Start call when patient is connected
   useEffect(() => {
+    console.log("📞 Doctor call status changed:", callStatus)
+
     if (callStatus === "connected" && currentPatientId) {
+      console.log("✅ Call connected with patient:", currentPatientId)
       setIsCallStarted(true)
 
       // Create and send offer to patient
@@ -42,6 +53,7 @@ export default function DoctorCallPage() {
       // Set a patient name based on ID (in a real app, you'd fetch this from a database)
       setPatientName(`Patient ${currentPatientId.substring(0, 4)}`)
     } else if (callStatus === "ended") {
+      console.log("❌ Call ended, redirecting to waiting patients")
       setIsCallStarted(false)
       router.push("/doctor/waiting-patients")
     }
