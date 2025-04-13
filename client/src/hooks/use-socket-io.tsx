@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
-import { SERVER_URL } from "../config"
+import { SERVER_URL } from "../../config"
 
 // Define types for our socket events
 export type Doctor = {

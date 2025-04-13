@@ -14,6 +14,7 @@ export default function DoctorCallPage() {
   const router = useRouter()
   const { socket, currentPatientId, callStatus } = useSocketIO("doctor")
   const [isCallStarted, setIsCallStarted] = useState(false)
+  const [patientName, setPatientName] = useState("Patient")
 
   // Initialize WebRTC with the current patient
   const {
@@ -37,11 +38,25 @@ export default function DoctorCallPage() {
       setIsCallStarted(true)
       // Create and send offer to patient
       createAndSendOffer()
+
+      // Set a patient name based on ID (in a real app, you'd fetch this from a database)
+      setPatientName(`Patient ${currentPatientId.substring(0, 4)}`)
     } else if (callStatus === "ended") {
       setIsCallStarted(false)
       router.push("/doctor/waiting-patients")
     }
   }, [callStatus, currentPatientId, createAndSendOffer, router])
+
+  // If no patient is connected, redirect back to waiting patients
+  useEffect(() => {
+    if (!currentPatientId && callStatus !== "connected") {
+      const redirectTimer = setTimeout(() => {
+        router.push("/doctor/waiting-patients")
+      }, 3000)
+
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [currentPatientId, callStatus, router])
 
   const handleEndCall = () => {
     socket?.emit("end-call")
@@ -63,7 +78,7 @@ export default function DoctorCallPage() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
                   <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">Patient</Badge>
+                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">{patientName}</Badge>
               </div>
 
               {/* Doctor's video (self view) */}
@@ -71,7 +86,7 @@ export default function DoctorCallPage() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
                   <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">You</Badge>
+                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">You (Doctor)</Badge>
               </div>
             </div>
           ) : (
@@ -79,7 +94,11 @@ export default function DoctorCallPage() {
               <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-4">
                 <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
               </div>
-              <p className="text-white font-medium">Connecting to patient...</p>
+              {currentPatientId ? (
+                <p className="text-white font-medium">Connecting to {patientName}...</p>
+              ) : (
+                <p className="text-white font-medium">No patient selected. Redirecting to waiting room...</p>
+              )}
               {streamError && <p className="mt-4 text-red-500">Error: {streamError}</p>}
             </div>
           )}

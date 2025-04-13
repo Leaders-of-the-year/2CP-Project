@@ -39,8 +39,10 @@ export default function WaitingPatientsPage() {
   }, [waitingPatients, searchQuery])
 
   const handleAcceptPatient = (patientId: string) => {
+    // Accept the patient first to establish the connection
     acceptPatient(patientId)
-    router.push("/doctor/call")
+    // Then redirect to the video call page
+    router.push("/videocall/doctor")
   }
 
   return (
