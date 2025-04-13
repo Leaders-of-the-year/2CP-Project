@@ -12,7 +12,7 @@ import { useWebRTC } from "@/hooks/use-webrtc"
 
 export default function DoctorCallPage() {
   const router = useRouter()
-  const { socket, currentPatientId, callStatus } = useSocketIO("doctor")
+  const { socket, currentPatientId, callStatus, registerDoctor } = useSocketIO("doctor")
   const [isCallStarted, setIsCallStarted] = useState(false)
   const [patientName, setPatientName] = useState("Patient")
 
@@ -57,6 +57,14 @@ export default function DoctorCallPage() {
       return () => clearTimeout(redirectTimer)
     }
   }, [currentPatientId, callStatus, router])
+
+  // Add a useEffect to ensure doctor is registered when the page loads
+  useEffect(() => {
+    // Ensure the doctor is registered when the component mounts
+    if (socket) {
+      registerDoctor()
+    }
+  }, [registerDoctor, socket])
 
   const handleEndCall = () => {
     socket?.emit("end-call")

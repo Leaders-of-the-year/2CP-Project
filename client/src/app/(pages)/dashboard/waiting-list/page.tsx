@@ -13,7 +13,7 @@ import { useSocketIO } from "@/hooks/use-socket-io"
 
 export default function WaitingPatientsPage() {
   const router = useRouter()
-  const { waitingPatients, acceptPatient, refreshWaitingPatients, isConnected } = useSocketIO("doctor")
+  const { waitingPatients, acceptPatient, refreshWaitingPatients, isConnected, registerDoctor } = useSocketIO("doctor")
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredPatients, setFilteredPatients] = useState<string[]>([])
 
@@ -39,9 +39,14 @@ export default function WaitingPatientsPage() {
   }, [waitingPatients, searchQuery])
 
   const handleAcceptPatient = (patientId: string) => {
-    // Accept the patient first to establish the connection
+    // First, ensure the doctor is registered
+    registerDoctor()
+
+    // Then accept the patient to establish the connection
+    console.log("Accepting patient:", patientId)
     acceptPatient(patientId)
-    // Then redirect to the video call page
+
+    // Redirect to the video call page
     router.push("/videocall/doctor")
   }
 

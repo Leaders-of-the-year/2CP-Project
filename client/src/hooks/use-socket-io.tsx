@@ -128,6 +128,17 @@ export function useSocketIO(role: "doctor" | "patient") {
     }
   }
 
+  // Add a new function to register a doctor
+  const registerDoctor = () => {
+    if (socket && role === "doctor") {
+      console.log("👨‍⚕️ Registering doctor with socket ID:", socket.id)
+      socket.emit("register-doctor")
+      return true
+    }
+    return false
+  }
+
+  // Update the return statement to include the new function
   return {
     socket,
     isConnected,
@@ -140,5 +151,6 @@ export function useSocketIO(role: "doctor" | "patient") {
     acceptPatient,
     endCall,
     refreshWaitingPatients,
+    registerDoctor,
   }
 }
