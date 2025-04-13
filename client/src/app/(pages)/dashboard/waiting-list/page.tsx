@@ -13,9 +13,17 @@ import { useSocketIO } from "@/hooks/use-socket-io"
 
 export default function WaitingPatientsPage() {
   const router = useRouter()
-  const { waitingPatients, acceptPatient, refreshWaitingPatients, isConnected, registerDoctor } = useSocketIO("doctor")
+  const { waitingPatients, acceptPatient, refreshWaitingPatients, isConnected, registerDoctor, isRegistered } =
+    useSocketIO("doctor")
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredPatients, setFilteredPatients] = useState<string[]>([])
+
+  // Register doctor once when the component mounts
+  useEffect(() => {
+    if (isConnected && !isRegistered()) {
+      registerDoctor()
+    }
+  }, [isConnected, isRegistered, registerDoctor])
 
   // Refresh waiting patients list periodically
   useEffect(() => {
@@ -39,11 +47,7 @@ export default function WaitingPatientsPage() {
   }, [waitingPatients, searchQuery])
 
   const handleAcceptPatient = (patientId: string) => {
-    // First, ensure the doctor is registered
-    registerDoctor()
-
-    // Then accept the patient to establish the connection
-    console.log("Accepting patient:", patientId)
+    // Accept the patient - the acceptPatient function will handle registration if needed
     acceptPatient(patientId)
 
     // Redirect to the video call page

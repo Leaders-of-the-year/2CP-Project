@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { io, type Socket } from "socket.io-client"
-import { SERVER_URL } from "../../config"
+import { SERVER_URL } from "../config"
 
 // Define types for our socket events
 export type Doctor = {
@@ -20,7 +20,8 @@ export function useSocketIO(role: "doctor" | "patient") {
   const [currentDoctorId, setCurrentDoctorId] = useState<string | null>(null)
   const [callStatus, setCallStatus] = useState<"idle" | "waiting" | "connected" | "ended">("idle")
 
-  const socketRef = useRef<Socket | null>(null)
+  // Use a ref to track if the doctor has been registered
+  const isRegisteredRef = useRef(false)
 
   // Initialize socket connection
   useEffect(() => {
@@ -34,9 +35,9 @@ export function useSocketIO(role: "doctor" | "patient") {
       console.log(`🔌 Connected to server with socket ID: ${socketIo.id} and role: ${role}`)
       setIsConnected(true)
 
-      // Register as doctor or request call as patient
+      // Only register as doctor on initial connection if role is doctor
+      // We'll handle explicit registration separately
       if (role === "doctor") {
-        socketIo.emit("register-doctor")
         socketIo.emit("get-waiting-patients")
         socketIo.emit("get-doctors-list")
       }
@@ -45,6 +46,8 @@ export function useSocketIO(role: "doctor" | "patient") {
     socketIo.on("disconnect", () => {
       console.log("🔌 Disconnected from server")
       setIsConnected(false)
+      // Reset registration status on disconnect
+      isRegisteredRef.current = false
     })
 
     // Update waiting patients list
@@ -57,6 +60,12 @@ export function useSocketIO(role: "doctor" | "patient") {
     socketIo.on("doctors-list-updated", (doctors: Doctor[]) => {
       console.log("👨‍⚕️ Received doctors list:", doctors)
       setDoctorsList(doctors)
+
+      // Check if this doctor is in the list to update registration status
+      if (role === "doctor" && socketIo.id) {
+        const isInList = doctors.some((doc) => doc.id === socketIo.id)
+        isRegisteredRef.current = isInList
+      }
     })
 
     // Handle patient waiting notification (for doctors)
@@ -92,7 +101,6 @@ export function useSocketIO(role: "doctor" | "patient") {
     })
 
     setSocket(socketIo)
-    socketRef.current = socketIo
 
     return () => {
       socketIo.disconnect()
@@ -107,9 +115,24 @@ export function useSocketIO(role: "doctor" | "patient") {
     }
   }
 
+  // Modified to check if doctor is registered first
   const acceptPatient = (patientId: string) => {
     if (socket && role === "doctor") {
-      socket.emit("accept-patient", patientId)
+      // Make sure doctor is registered before accepting patient
+      if (!isRegisteredRef.current) {
+        console.log("Doctor not registered yet, registering first...")
+        socket.emit("register-doctor")
+        isRegisteredRef.current = true
+
+        // Small delay to ensure registration completes before accepting
+        setTimeout(() => {
+          console.log("Now accepting patient:", patientId)
+          socket.emit("accept-patient", patientId)
+        }, 500)
+      } else {
+        console.log("Doctor already registered, accepting patient:", patientId)
+        socket.emit("accept-patient", patientId)
+      }
     }
   }
 
@@ -128,17 +151,24 @@ export function useSocketIO(role: "doctor" | "patient") {
     }
   }
 
-  // Add a new function to register a doctor
+  // Modified to check if already registered
   const registerDoctor = () => {
-    if (socket && role === "doctor") {
+    if (socket && role === "doctor" && !isRegisteredRef.current) {
       console.log("👨‍⚕️ Registering doctor with socket ID:", socket.id)
       socket.emit("register-doctor")
+      isRegisteredRef.current = true
       return true
+    } else if (isRegisteredRef.current) {
+      console.log("Doctor already registered, skipping registration")
     }
-    return false
+    return isRegisteredRef.current
   }
 
-  // Update the return statement to include the new function
+  // Check if doctor is registered
+  const isRegistered = () => {
+    return isRegisteredRef.current
+  }
+
   return {
     socket,
     isConnected,
@@ -152,5 +182,6 @@ export function useSocketIO(role: "doctor" | "patient") {
     endCall,
     refreshWaitingPatients,
     registerDoctor,
+    isRegistered,
   }
 }
