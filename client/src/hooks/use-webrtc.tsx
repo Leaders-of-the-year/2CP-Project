@@ -88,7 +88,7 @@ export function useWebRTC({ socket, isCallStarted, remoteId }: WebRTCHookProps) 
       }
 
       // Add local tracks to peer connection
-      localStreamRef.current.getTracks().forEach((track) => {
+      localStreamRef.current?.getTracks().forEach((track) => {
         pc.addTrack(track, localStreamRef.current!)
       })
 
