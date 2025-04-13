@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import HeaderCall from "../header-call"
 import FooterCall from "../footer-call"
 import { SERVER_URL } from "../../../../../config"
+console.log(SERVER_URL)
 const socket: Socket = io(SERVER_URL, {
   secure: true,
   rejectUnauthorized: false,

@@ -26,6 +26,8 @@ export default function Doctor() {
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false)
   const [isRecording, setIsRecording] = useState<boolean>(false)
   const [recordingTime, setRecordingTime] = useState<string>("00:00")
+  // Add state for waiting patients list
+  const [waitingPatients, setWaitingPatients] = useState<string[]>([])
 
   const hasRegistered = useRef<boolean>(false)
   const localStreamRef = useRef<MediaStream | null>(null)
@@ -51,10 +53,17 @@ export default function Doctor() {
         socket.emit("register-doctor")
         console.log("👨‍⚕️ Doctor registered with socket ID:", socket.id)
         hasRegistered.current = true
+        
+        // Request waiting patients list after registering
+        socket.emit("get-waiting-patients")
+        console.log("🔄 Requested waiting patients list")
       } else if (!stream) {
         console.warn("⚠️ Did not register doctor: stream is null")
       } else {
         console.log("ℹ️ Skipping registration: Doctor already registered")
+        // Request waiting patients list anyway
+        socket.emit("get-waiting-patients")
+        console.log("🔄 Requested waiting patients list")
       }
     }
 
@@ -62,7 +71,16 @@ export default function Doctor() {
       initialize()
     } else {
       console.log("ℹ️ Component re-mounted, but doctor already registered")
+      // Request waiting patients list on remount
+      socket.emit("get-waiting-patients")
+      console.log("🔄 Requested waiting patients list")
     }
+
+    // Listen for waiting patients updates
+    socket.on("waiting-patients-updated", (patientsList: string[]) => {
+      console.log("📋 Received waiting patients list:", patientsList)
+      setWaitingPatients(patientsList)
+    })
 
     socket.on("patient-waiting", (patId: string) => {
       console.log("🧑‍💼 New patient waiting:", patId)
@@ -125,6 +143,7 @@ export default function Doctor() {
 
     return () => {
       console.log("Cleaning up Doctor component...")
+      socket.off("waiting-patients-updated") // Remove the new listener
       socket.off("patient-waiting")
       socket.off("call-accepted")
       socket.off("receive-answer")
@@ -138,6 +157,23 @@ export default function Doctor() {
       setPeerConnection(null)
     }
   }, [])
+
+  // Effect to periodically refresh waiting patients list
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (hasRegistered.current && !isCallStarted) {
+        socket.emit("get-waiting-patients")
+        console.log("🔄 Periodically refreshing waiting patients list")
+      }
+    }, 10000) // Refresh every 10 seconds
+
+    return () => clearInterval(intervalId)
+  }, [isCallStarted])
+
+  // Log waitingPatients changes
+  useEffect(() => {
+    console.log("🧑‍💼 Current waiting patients state:", waitingPatients)
+  }, [waitingPatients])
 
   // Fix the setupLocalStream function to ensure local video is properly displayed
   const setupLocalStream = async (): Promise<MediaStream | null> => {
@@ -248,6 +284,10 @@ export default function Doctor() {
     setConnectionState("new")
     pendingIceCandidates.current = []
     pendingAnswer.current = null
+    
+    // Refresh waiting patients list after call ends
+    socket.emit("get-waiting-patients")
+    console.log("🔄 Requesting waiting patients list after call end")
   }
 
   const acceptPatient = () => {
@@ -373,4 +413,3 @@ export default function Doctor() {
     </TooltipProvider>
   )
 }
-
