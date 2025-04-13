@@ -1,8 +1,11 @@
-import fs from 'fs';
-import https from 'https';
-import path from 'path';
-import next from 'next';
-import {CLIENT_IP,CLIENT_PORT} from './config.js';
+const fs = require('fs');
+const https = require('https');
+const path = require('path');
+const next = require('next');
+const dotenv = require('dotenv');
+dotenv.config();
+const CLIENT_PORT = process.env.CLIENT_PORT || 3000;
+const CLIENT_IP = process.env.CLIENT_IP || 'localhost';
 const keyPath = path.join(__dirname, 'key.pem');
 const certPath = path.join(__dirname, 'cert.pem');
 
@@ -20,8 +23,8 @@ app.prepare().then(() => {
     .createServer(options, (req, res) => {
       handle(req, res);
     })
-    .listen(CLIENT_PORT,`${CLIENT_IP}`, (err) => {
+    .listen(CLIENT_PORT, CLIENT_IP, (err) => {
       if (err) throw err;
-      console.log(`> Ready on https://${CLIENT_PORT}:${CLIENT_IP}`);
+      console.log(`> Ready on https://${process.env.CLIENT_IP}:${process.env.CLIENT_PORT}`);
     });
 });

@@ -9,7 +9,7 @@ export function useProtectedRoute() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) {
       router.push("/signin")
     }
   }, [isAuthenticated, router])
