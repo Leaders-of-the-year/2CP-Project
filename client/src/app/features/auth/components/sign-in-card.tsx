@@ -12,12 +12,10 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/app/providers"
 import { toast } from "@/hooks/use-toast"
-import { SERVER_URL } from "@/../../config"
+
 interface SignInCredentials {
   email: string
   password: string
-  // userType: "doctor" | "patient"
-  // rememberMe: boolean
 }
 
 export default function SignInForm() {
@@ -26,37 +24,36 @@ export default function SignInForm() {
   const [credentials, setCredentials] = useState<SignInCredentials>({
     email: "",
     password: "",
-    // userType: "doctor",
-    // rememberMe: false,
   })
-  
+
   const signInMutation = useMutation({
     mutationFn: async ({ email, password }: SignInCredentials) => {
-      const response = await fetch(`${SERVER_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.SERVER_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Important for cookies
       })
-  
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.message || "Login failed")
       }
-  
+
       return response.json()
     },
     onSuccess: (data) => {
       console.log("Sign in successful:", data)
-      // Store the token and user data in the auth context
-      
+
+      // The login function will handle redirecting to the appropriate dashboard
       login(data.token, data.user)
+
       toast({
         title: "Sign in successful",
         description: "Welcome back!",
       })
-      router.push("/dashboard")
     },
     onError: (error) => {
       console.error("Sign in failed:", error)
@@ -67,22 +64,22 @@ export default function SignInForm() {
       })
     },
   })
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     signInMutation.mutate(credentials)
   }
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-  
+
     if (name === "email" || name === "password") {
       setCredentials((prev) => ({ ...prev, [name]: value }))
     }
   }
-  
+
   return (
-    <div className=" backdrop-blur-sm rounded-3xl p-8 shadow-lg overflow-hidden relative">
+    <div className="backdrop-blur-sm rounded-3xl p-8 shadow-lg overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-teal-100/50 z-0"></div>
       <div className="relative z-10">
         <h1 className="text-3xl font-semibold text-center mb-8 text-slate-800">Sign in</h1>
@@ -122,11 +119,7 @@ export default function SignInForm() {
               </a>
             </div>
           </div>
-          <RadioGroup
-            value={'doctor'}
-            onValueChange={(value) => setCredentials((prev) => ({ ...prev, userType: value as "doctor" | "patient" }))}
-            className="flex space-x-12"
-          >
+          <RadioGroup defaultValue="doctor" className="flex space-x-12">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="doctor" id="doctor" />
               <Label htmlFor="doctor" className="text-slate-700">
@@ -141,11 +134,7 @@ export default function SignInForm() {
             </div>
           </RadioGroup>
           <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={true}
-              onCheckedChange={(checked) => setCredentials((prev) => ({ ...prev, rememberMe: checked === true }))}
-            />
+            <Checkbox id="remember" defaultChecked={true} />
             <Label htmlFor="remember" className="text-slate-700">
               Remember me
             </Label>

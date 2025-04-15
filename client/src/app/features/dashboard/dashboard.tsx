@@ -164,14 +164,14 @@ export default function Dashboard() {
     return null // Don't render anything while redirecting
   }
 
-  return (
-    <SidebarProvider>
-      <div className="flex w-full h-screen bg-gray-50">
-        <AppSidebar />
-        <SidebarInset className="flex-1 overflow-auto">
-          <DashboardContent />
-        </SidebarInset>
+          {/*  */}
+  return (<DashboardContent />)
+    // <SidebarProvider>
+      {/* <div className="flex w-full h-screen bg-gray-50"> */}
+        {/* <AppSidebar /> */}
+        {/* <SidebarInset className="flex-1 overflow-auto"> */}
+        {/* </SidebarInset>
       </div>
-    </SidebarProvider>
-  )
+    </SidebarProvider> */}
+  // )
 }

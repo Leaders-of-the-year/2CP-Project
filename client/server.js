@@ -23,8 +23,8 @@ app.prepare().then(() => {
     .createServer(options, (req, res) => {
       handle(req, res);
     })
-    .listen(CLIENT_PORT, CLIENT_IP, (err) => {
+    .listen(CLIENT_PORT, "0.0.0.0", (err) => {
       if (err) throw err;
-      console.log(`> Ready on https://${process.env.CLIENT_IP}:${process.env.CLIENT_PORT}`);
+      console.log(`> Ready on https://${CLIENT_IP}:${CLIENT_PORT}`);
     });
 });
