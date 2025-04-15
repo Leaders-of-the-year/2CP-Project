@@ -33,10 +33,10 @@ export function middleware(request: NextRequest) {
     if (path.startsWith("/dashboard")) {
       const correctPath =
         role === "patient"
-          ? "/dashboard/patient"
+          ? "/dashboard-patient"
           : role === "doctor_general"
-            ? "/dashboard/doctor-general"
-            : "/dashboard/doctor-specialty"
+            ? "/dashboard-doctor-general"
+            : "/dashboard-doctor-specialty"
 
       // If user is trying to access a dashboard that doesn't match their role
       if (!path.startsWith(correctPath)) {
@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// See "Matching Paths" below to learn more
-export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*"],
-}
+// // See "Matching Paths" below to learn more
+// export const config = {
+//   matcher: ["/dashboard/:path*", "/profile/:path*"],
+// }

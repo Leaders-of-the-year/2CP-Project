@@ -1,5 +1,5 @@
 "use client"
-
+import { SERVER_URL } from "../../../../../config"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -66,7 +66,7 @@ export default function DoctorGeneralProfilePage() {
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/profile/doctor-general`, {
+        const response = await fetch(`${SERVER_URL}/api/profile/doctor-general`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

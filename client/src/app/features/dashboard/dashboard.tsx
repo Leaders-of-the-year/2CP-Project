@@ -14,7 +14,7 @@ import { mockUserData } from "@/mocks/user-data"
 import { useAuth } from "@/app/providers"
 import { useApi } from "@/hooks/useApi"
 import { useQuery } from "@tanstack/react-query"
-
+import { SERVER_URL } from "../../../../config"
 // Define the patient profile data structure
 interface PatientProfile {
   type: string
@@ -43,7 +43,7 @@ function DashboardContent() {
   // Fetch patient profile data from the specified endpoint
   const { data, isLoading, error } = useQuery({
     queryKey: ["patientProfile"],
-    queryFn: () => fetchWithAuth(`${process.env.SERVER_URL}/api/dashboard_patients/patient/profile`),
+    queryFn: () => fetchWithAuth(`${SERVER_URL}/api/dashboard_patients/patient/profile`),
     // Only run this query if we have a token
     enabled: !!token,
   })

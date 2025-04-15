@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Heart, Thermometer, Droplet, FileText, Activity, XCircle, Pill, Edit } from "lucide-react"
+import { SERVER_URL } from "../../../../../config"
 
 interface PatientProfile {
   id: string
@@ -53,14 +54,14 @@ export default function PatientProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (token) {
+      if (!token) {
         router.push("/login")
         return
       }
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/profile/patient`, {
+        const response = await fetch(`${SERVER_URL}/api/dashboard_patients/patient/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -70,7 +71,9 @@ export default function PatientProfilePage() {
           throw new Error("Failed to fetch profile")
         }
 
-        const data = await response.json()
+        let data = await response.json()
+        data=data.patient
+        console.log(data,"dataaa",Object.keys(data))
         setProfile(data)
       } catch (err) {
         setError("Failed to load profile data")
@@ -137,7 +140,7 @@ export default function PatientProfilePage() {
             <Heart className="h-10 w-10 text-red-500 mb-2" />
             <p className="text-gray-600">heart Rate</p>
             <div className="flex items-baseline">
-              <span className="text-4xl font-bold">{profile.medical_info.heart_rate}</span>
+              <span className="text-4xl font-bold">{profile?.medical_info?.heart_rate ?? "not yet"}</span>
               <span className="text-gray-500 ml-1">bpm</span>
             </div>
           </CardContent>
@@ -159,7 +162,7 @@ export default function PatientProfilePage() {
             <Droplet className="h-10 w-10 text-red-500 mb-2" />
             <p className="text-gray-600">Glucose</p>
             <div className="flex items-baseline">
-              <span className="text-4xl font-bold">{profile.medical_info.glucose}</span>
+              <span className="text-4xl font-bold">{profile?.medical_info?.glucose ?? "not yet"}</span>
               <span className="text-gray-500 ml-1">mg/dl</span>
             </div>
           </CardContent>

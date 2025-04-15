@@ -109,7 +109,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     // If user is logged in but accessing wrong role-specific routes
     if (token && role && pathname && pathname.startsWith("/dashboard")) {
-      const correctDashboardPrefix = `/dashboard/${
+      const correctDashboardPrefix = `/dashboard-${
         role === "patient" ? "patient" : role === "doctor_general" ? "doctor-general" : "doctor-specialty"
       }`
 
@@ -143,10 +143,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       const roleToUse = userRole || newUser.role
       const dashboardRoute =
         roleToUse === "patient"
-          ? "/dashboard/patient"
+          ? "/dashboard-patient"
           : roleToUse === "doctor_general"
-            ? "/dashboard/doctor-general"
-            : "/dashboard/doctor-specialty"
+            ? "/dashboard-doctor-general"
+            : "/dashboard-doctor-specialty"
 
       router.push(dashboardRoute)
     }

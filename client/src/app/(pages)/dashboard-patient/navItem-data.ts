@@ -7,7 +7,7 @@ export const navItems = [
     {
       title: "Scheduled",
       icon: "/Scheduled.svg",
-      url: "/scheduled",
+      url: "/dashboard-patient/schedule",
     },
     {
       title: "Settings",

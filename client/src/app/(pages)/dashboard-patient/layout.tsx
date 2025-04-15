@@ -11,7 +11,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <ProtectedRoute allowedRoles={["doctor_specialty"]}>
+    <ProtectedRoute allowedRoles={["patient"]}>
       <SidebarProvider>
         <div className="flex w-full h-screen bg-gray-50">
           <AppSidebar navItems={navItems} />

@@ -21,6 +21,7 @@ import {
   Award,
   ThumbsUp,
 } from "lucide-react"
+import { SERVER_URL } from "../../../../../../../config"
 
 interface Doctor {
   id: string
@@ -72,7 +73,7 @@ export default function DoctorProfilePage() {
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/doctors/${params.id}`, {
+        const response = await fetch(`${SERVER_URL}/api/doctors/${params.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

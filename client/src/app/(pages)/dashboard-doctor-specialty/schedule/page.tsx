@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { SERVER_URL } from "../../../../../config"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -51,7 +51,7 @@ export default function DoctorSchedulePage() {
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/doctor/appointments`, {
+        const response = await fetch(`${SERVER_URL}/api/doctor/appointments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

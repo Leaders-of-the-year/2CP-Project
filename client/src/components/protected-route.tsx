@@ -25,10 +25,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
         // Redirect to the appropriate dashboard based on role
         const dashboardRoute =
           role === "patient"
-            ? "/dashboard/patient"
+            ? "/dashboard-patient"
             : role === "doctor_general"
-              ? "/dashboard/doctor-general"
-              : "/dashboard/doctor-specialty"
+              ? "/dashboard-doctor-general"
+              : "/dashboard-doctor-specialty"
 
         router.push(dashboardRoute)
       }

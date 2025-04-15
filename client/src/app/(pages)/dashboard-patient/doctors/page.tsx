@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, SlidersHorizontal, Star, StarHalf, Phone } from 'lucide-react'
+import { SERVER_URL } from "../../../../../config"
 
 interface Doctor {
   id: string
@@ -39,14 +40,14 @@ export default function DoctorsPage() {
 
   useEffect(() => {
     const fetchDoctors = async () => {
-      if (token) {
+      if (!token) {
         router.push("/login")
         return
       }
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/doctors`, {
+        const response = await fetch(`${SERVER_URL}/api/doctors`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

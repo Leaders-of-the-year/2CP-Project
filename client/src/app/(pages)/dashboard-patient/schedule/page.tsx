@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SlidersHorizontal, Search, ArrowRight } from 'lucide-react'
+import { SERVER_URL } from "../../../../../config"
 
 interface Appointment {
   id: string
@@ -41,14 +42,14 @@ export default function PatientSchedulePage() {
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      if (token) {
+      if (!token) {
         router.push("/login")
         return
       }
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.SERVER_URL}/api/patient/appointments`, {
+        const response = await fetch(`${SERVER_URL}/api/patient/appointments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
