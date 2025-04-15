@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image"
 import { LogOut } from "lucide-react"
 import {
@@ -11,7 +12,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
-
+import { useAuth } from "@/app/providers"
 interface NavItem {
   title: string
   icon: string
@@ -23,6 +24,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ navItems, className, ...props }: AppSidebarProps) {
+  const {logout}=useAuth()
   return (
     <Sidebar className={cn("border-r", className)} {...props}>
       <SidebarHeader className="flex items-center justify-center py-6">
@@ -50,7 +52,7 @@ export function AppSidebar({ navItems, className, ...props }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href="/logout" className="text-teal-600 flex items-center gap-2">
+              <a href="/logout" className="text-teal-600 flex items-center gap-2" onClick={()=>(logout())}>
                 <LogOut className="h-5 w-5" />
                 <span>Sign out</span>
               </a>
