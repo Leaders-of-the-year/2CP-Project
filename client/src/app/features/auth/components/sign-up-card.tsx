@@ -5,12 +5,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronLeft, Eye, EyeOff, Check, User, Lock, Phone, Stethoscope, FileText, AlertCircle } from "lucide-react"
+import { ChevronLeft, Eye, EyeOff, User, Stethoscope, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -19,7 +18,7 @@ import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/app/providers"
 
 // Define the steps in the sign-up process
-type Step = "email" | "userType" | "identity" | "specialInfo" | "password" | "phone" | "terms"
+type Step = "userType" | "details" | "terms"
 
 // Define the user types
 type UserType = "doctor_special" | "doctor_general" | "patient"
@@ -33,80 +32,78 @@ interface SignUpFormData {
   password: string
   first_name: string
   last_name: string
-  phone_number: string
-  acceptTerms: boolean
-  gender: "male" | "female" | ""
-  dateOfBirth: string
 
   // Doctor special fields
-  doctor_number?: string
   specialty_name?: string
+  doctor_number?: string
   description?: string
 
   // Doctor general fields
-  specialization?: string
   years_of_experience?: number
 
-  // Patient fields
-  address?: string
-  medical_history?: string
+  // Common address fields
+  address_line1?: string
+  state?: string
+  postal_code?: string
+  preferred_language?: string
 
-  // Medical info fields
-  blood_type?: string
-  allergies?: string
-  height?: string
-  weight?: string
-  heart_rate?: string
-  body_temperature?: string
-  glucose?: string
+  // Patient-specific fields
+  country?: string
 }
 
 // Format the data for the API
 const formatDataForApi = (data: SignUpFormData) => {
-  // Create the medical_info object for patient type
-  const medical_info =
-    data.type === "patient"
-      ? {
-          blood_type: "B+", // Default or collected from form
-          allergies: "None", // Default or collected from form
-          height: "172 cm", // Default or collected from form
-          weight: "65 kg", // Default or collected from form
-          heart_rate: "78 bpm", // Default or collected from form
-          body_temperature: "98.6 F", // Default or collected from form
-          glucose: "88 mg/dL", // Default or collected from form
-        }
-      : undefined
-
-  return {
+  // Create a base object with common fields
+  const baseData = {
     type: data.type,
     username: data.username,
     email: data.email,
     password: data.password,
     first_name: data.first_name,
     last_name: data.last_name,
-    phone_number: data.phone_number,
-    gender: data.gender,
-    ...(data.type === "patient" && {
-      address: data.address,
-      medical_info,
-    }),
-    ...(data.type === "doctor_special" && {
+  }
+
+  // Add type-specific fields
+  if (data.type === "patient") {
+    return {
+      ...baseData,
+      address_line1: data.address_line1,
+      state: data.state,
+      country: data.country,
+      postal_code: data.postal_code,
+      preferred_language: data.preferred_language,
+    }
+  } else if (data.type === "doctor_special") {
+    return {
+      ...baseData,
       doctor_number: data.doctor_number,
       specialty_name: data.specialty_name,
       description: data.description,
-    }),
-    ...(data.type === "doctor_general" && {
-      doctor_number: data.doctor_number,
-      specialization: data.specialization,
+      address_line1: data.address_line1,
+      state: data.state,
+      postal_code: data.postal_code,
+      preferred_language: data.preferred_language,
       years_of_experience: data.years_of_experience,
-    }),
+    }
+  } else if (data.type === "doctor_general") {
+    return {
+      ...baseData,
+      doctor_number: data.doctor_number,
+      years_of_experience: data.years_of_experience,
+      address_line1: data.address_line1,
+      state: data.state,
+      postal_code: data.postal_code,
+      preferred_language: data.preferred_language,
+    }
   }
+
+  return baseData
 }
 
 // API client function to register a user
 const registerUser = async (userData: any) => {
   console.log("final data to submit:", userData)
-  const response = await fetch(`${process.env.SERVER_URL}/api/auth/register`, {
+  const response = await fetch(`${SERVER_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +123,7 @@ export default function SignUpForm() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { login } = useAuth()
-  const [currentStep, setCurrentStep] = useState<Step>("email")
+  const [currentStep, setCurrentStep] = useState<Step>("userType")
   const [showPassword, setShowPassword] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState<"Weak" | "Medium" | "Strong">("Weak")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -139,45 +136,7 @@ export default function SignUpForm() {
     password: "",
     first_name: "",
     last_name: "",
-    phone_number: "",
-    acceptTerms: false,
-    gender: "",
-    dateOfBirth: "",
-    blood_type: "B+",
-    allergies: "None",
-    height: "172 cm",
-    weight: "65 kg",
-    heart_rate: "78 bpm",
-    body_temperature: "98.6 F",
-    glucose: "88 mg/dL",
   })
-
-  // Format the data for the API
-  // const formatDataForApi = (data: SignUpFormData) => {
-  //   return {
-  //     type: data.type,
-  //     username: data.username,
-  //     email: data.email,
-  //     password: data.password,
-  //     first_name: data.first_name,
-  //     last_name: data.last_name,
-  //     ...(data.type === "doctor_special" && {
-  //       doctor_number: data.doctor_number,
-  //       specialty_name: data.specialty_name,
-  //       description: data.description,
-  //     }),
-  //     ...(data.type === "doctor_general" && {
-  //       doctor_number: data.doctor_number,
-  //       specialization: data.specialization,
-  //       years_of_experience: data.years_of_experience,
-  //     }),
-  //     ...(data.type === "patient" && {
-  //       phone_number: data.phone_number,
-  //       address: data.address,
-  //       medical_history: data.medical_history,
-  //     }),
-  //   }
-  // }
 
   // React Query mutation hook
   const signUpMutation = useMutation({
@@ -243,13 +202,6 @@ export default function SignUpForm() {
 
   // Handle checkbox changes
   const handleCheckboxChange = (checked: boolean) => {
-    setFormData((prev) => ({ ...prev, acceptTerms: checked }))
-    if (errorMessage) setErrorMessage(null)
-  }
-
-  // Handle radio button changes
-  const handleGenderChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, gender: value as "male" | "female" }))
     if (errorMessage) setErrorMessage(null)
   }
 
@@ -262,14 +214,12 @@ export default function SignUpForm() {
       doctor_number: undefined,
       specialty_name: undefined,
       description: undefined,
-      specialization: undefined,
       years_of_experience: undefined,
-      address: undefined,
-      medical_history: undefined,
-      blood_type: undefined,
-      allergies: undefined,
-      height: undefined,
-      weight: undefined,
+      address_line1: undefined,
+      state: undefined,
+      postal_code: undefined,
+      preferred_language: undefined,
+      country: undefined,
     }))
     if (errorMessage) setErrorMessage(null)
   }
@@ -287,7 +237,7 @@ export default function SignUpForm() {
     setErrorMessage(null)
 
     if (currentStep === "terms") {
-      console.log("int terms", formData)
+      console.log("Submitting form data:", formData)
       signUpMutation.mutate(formData)
     } else {
       // Move to the next step
@@ -299,17 +249,9 @@ export default function SignUpForm() {
   // Get the next step in the flow
   const getNextStep = (step: Step): Step => {
     switch (step) {
-      case "email":
-        return "userType"
       case "userType":
-        return "identity"
-      case "identity":
-        return "specialInfo"
-      case "specialInfo":
-        return "password"
-      case "password":
-        return "phone"
-      case "phone":
+        return "details"
+      case "details":
         return "terms"
       default:
         return "terms"
@@ -321,23 +263,11 @@ export default function SignUpForm() {
     setErrorMessage(null)
 
     switch (currentStep) {
-      case "userType":
-        setCurrentStep("email")
-        break
-      case "identity":
+      case "details":
         setCurrentStep("userType")
         break
-      case "specialInfo":
-        setCurrentStep("identity")
-        break
-      case "password":
-        setCurrentStep("specialInfo")
-        break
-      case "phone":
-        setCurrentStep("password")
-        break
       case "terms":
-        setCurrentStep("phone")
+        setCurrentStep("details")
         break
     }
   }
@@ -345,27 +275,26 @@ export default function SignUpForm() {
   // Determine if the current step is valid and the next button should be enabled
   const isStepValid = () => {
     switch (currentStep) {
-      case "email":
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
       case "userType":
         return !!formData.type
-      case "identity":
-        return formData.first_name && formData.last_name && formData.username
-      case "specialInfo":
+      case "details":
+        const commonFieldsValid =
+          !!formData.username &&
+          !!formData.email &&
+          !!formData.password &&
+          !!formData.first_name &&
+          !!formData.last_name
+
         if (formData.type === "doctor_special") {
-          return !!formData.doctor_number && !!formData.specialty_name && !!formData.description
+          return commonFieldsValid && !!formData.doctor_number && !!formData.specialty_name && !!formData.description
         } else if (formData.type === "doctor_general") {
-          return !!formData.doctor_number && !!formData.specialization && !!formData.years_of_experience
+          return commonFieldsValid && !!formData.doctor_number && !!formData.years_of_experience
         } else if (formData.type === "patient") {
-          return !!formData.address
+          return commonFieldsValid && !!formData.address_line1
         }
         return false
-      case "password":
-        return formData.password.length >= 6
-      case "phone":
-        return /^\d{10,15}$/.test(formData.phone_number.replace(/\D/g, "")) || formData.phone_number.includes("-")
       case "terms":
-        return formData.acceptTerms
+        return true
       default:
         return false
     }
@@ -390,7 +319,7 @@ export default function SignUpForm() {
           transition={{ duration: 0.3 }}
           className="bg-white rounded-3xl p-8 shadow-lg overflow-hidden relative"
         >
-          {currentStep !== "email" && (
+          {currentStep !== "userType" && (
             <button
               onClick={handlePrevious}
               className="flex items-center text-teal-700 mb-6 hover:text-teal-800 transition-colors"
@@ -408,38 +337,11 @@ export default function SignUpForm() {
             </Alert>
           )}
 
-          {/* Email Step */}
-          {currentStep === "email" && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-semibold text-center text-slate-800">Sign up</h1>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-teal-600 font-medium">
-                  Enter your email address
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="example@gmail.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="border-slate-200"
-                  required
-                />
-              </div>
-            </div>
-          )}
-
           {/* User Type Step */}
           {currentStep === "userType" && (
             <div className="space-y-6">
-              <div className="flex items-center text-teal-600 gap-2">
-                <User size={18} />
-                <span>{formData.email}</span>
-              </div>
-
-              <h2 className="text-xl font-semibold text-slate-800">Select account type</h2>
+              <h1 className="text-3xl font-semibold text-center text-slate-800">Sign up</h1>
+              <p className="text-center text-slate-600">Select your account type to get started</p>
 
               <div className="space-y-4">
                 <RadioGroup value={formData.type} onValueChange={handleUserTypeChange} className="flex flex-col gap-3">
@@ -471,16 +373,23 @@ export default function SignUpForm() {
             </div>
           )}
 
-          {/* Identity Step */}
-          {currentStep === "identity" && (
+          {/* Details Step */}
+          {currentStep === "details" && (
             <div className="space-y-6">
               <div className="flex items-center text-teal-600 gap-2">
-                <User size={18} />
-                <span>{formData.email}</span>
+                {formData.type.includes("doctor") ? <Stethoscope size={18} /> : <User size={18} />}
+                <span>
+                  {formData.type === "doctor_special"
+                    ? "Specialist Doctor"
+                    : formData.type === "doctor_general"
+                      ? "General Doctor"
+                      : "Patient"}
+                </span>
               </div>
 
-              <h2 className="text-xl font-semibold text-slate-800">Enter your identity</h2>
+              <h2 className="text-xl font-semibold text-slate-800">Enter your details</h2>
 
+              {/* Common fields for all user types */}
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="username" className="text-slate-700 mb-2 block">
@@ -495,6 +404,47 @@ export default function SignUpForm() {
                     className="border-slate-200"
                     required
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="text-slate-700 mb-2 block">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="example@gmail.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="border-slate-200"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="password" className="text-slate-700 mb-2 block">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="border-slate-200 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -527,356 +477,207 @@ export default function SignUpForm() {
                   />
                 </div>
 
-                <div>
-                  <Label className="text-slate-700 mb-2 block">Gender</Label>
-                  <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4">
-                    <div className="flex items-center border rounded-md px-4 py-2 w-full">
-                      <RadioGroupItem value="male" id="male" />
-                      <Label htmlFor="male" className="ml-2">
-                        Male
-                      </Label>
-                    </div>
-                    <div className="flex items-center border rounded-md px-4 py-2 w-full">
-                      <RadioGroupItem value="female" id="female" />
-                      <Label htmlFor="female" className="ml-2">
-                        Female
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div>
-                  <Label htmlFor="dateOfBirth" className="text-slate-700 mb-2 block">
-                    Date of birth
-                  </Label>
-                  <Input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="text"
-                    placeholder="dd/mm/yyyy"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    className="border-slate-200"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Special Info Step */}
-          {currentStep === "specialInfo" && (
-            <div className="space-y-6">
-              <div className="flex items-center text-teal-600 gap-2">
-                {formData.type.includes("doctor") ? <Stethoscope size={18} /> : <FileText size={18} />}
-                <span>
-                  {formData.first_name} {formData.last_name}
-                </span>
-              </div>
-
-              <h2 className="text-xl font-semibold text-slate-800">
-                {formData.type === "doctor_special" && "Specialist Information"}
-                {formData.type === "doctor_general" && "Doctor Information"}
-                {formData.type === "patient" && "Patient Information"}
-              </h2>
-
-              {formData.type === "doctor_special" && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="doctor_number" className="text-slate-700 mb-2 block">
-                      Doctor Number
-                    </Label>
-                    <Input
-                      id="doctor_number"
-                      name="doctor_number"
-                      placeholder="Doctor license number"
-                      value={formData.doctor_number || ""}
-                      onChange={handleChange}
-                      className="border-slate-200"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="specialty_name" className="text-slate-700 mb-2 block">
-                      Specialty
-                    </Label>
-                    <Select
-                      value={formData.specialty_name}
-                      onValueChange={(value) => handleSelectChange("specialty_name", value)}
-                    >
-                      <SelectTrigger className="border-slate-200">
-                        <SelectValue placeholder="Select specialty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Cardiology">Cardiology</SelectItem>
-                        <SelectItem value="Dermatology">Dermatology</SelectItem>
-                        <SelectItem value="Endocrinology">Endocrinology</SelectItem>
-                        <SelectItem value="Gastroenterology">Gastroenterology</SelectItem>
-                        <SelectItem value="Neurology">Neurology</SelectItem>
-                        <SelectItem value="Oncology">Oncology</SelectItem>
-                        <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                        <SelectItem value="Psychiatry">Psychiatry</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description" className="text-slate-700 mb-2 block">
-                      Professional Description
-                    </Label>
-                    <Textarea
-                      id="description"
-                      name="description"
-                      placeholder="Describe your expertise and experience"
-                      value={formData.description || ""}
-                      onChange={handleChange}
-                      className="border-slate-200 min-h-[100px]"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-
-              {formData.type === "doctor_general" && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="doctor_number" className="text-slate-700 mb-2 block">
-                      Doctor Number
-                    </Label>
-                    <Input
-                      id="doctor_number"
-                      name="doctor_number"
-                      placeholder="Doctor license number"
-                      value={formData.doctor_number || ""}
-                      onChange={handleChange}
-                      className="border-slate-200"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="specialization" className="text-slate-700 mb-2 block">
-                      Specialization
-                    </Label>
-                    <Select
-                      value={formData.specialization}
-                      onValueChange={(value) => handleSelectChange("specialization", value)}
-                    >
-                      <SelectTrigger className="border-slate-200">
-                        <SelectValue placeholder="Select specialization" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Family Medicine">Family Medicine</SelectItem>
-                        <SelectItem value="Internal Medicine">Internal Medicine</SelectItem>
-                        <SelectItem value="General Practice">General Practice</SelectItem>
-                        <SelectItem value="Emergency Medicine">Emergency Medicine</SelectItem>
-                        <SelectItem value="Preventive Medicine">Preventive Medicine</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="years_of_experience" className="text-slate-700 mb-2 block">
-                      Years of Experience
-                    </Label>
-                    <Input
-                      id="years_of_experience"
-                      name="years_of_experience"
-                      type="number"
-                      placeholder="Years of professional experience"
-                      value={formData.years_of_experience || ""}
-                      onChange={handleChange}
-                      className="border-slate-200"
-                      min="0"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-
-              {formData.type === "patient" && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="address" className="text-slate-700 mb-2 block">
-                      Address
-                    </Label>
-                    <Textarea
-                      id="address"
-                      name="address"
-                      placeholder="Your full address"
-                      value={formData.address || ""}
-                      onChange={handleChange}
-                      className="border-slate-200"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="medical_history" className="text-slate-700 mb-2 block">
-                      Medical History
-                    </Label>
-                    <Textarea
-                      id="medical_history"
-                      name="medical_history"
-                      placeholder="Relevant medical history, allergies, conditions, etc."
-                      value={formData.medical_history || ""}
-                      onChange={handleChange}
-                      className="border-slate-200 min-h-[100px]"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Doctor special fields */}
+                {formData.type === "doctor_special" && (
+                  <>
                     <div>
-                      <Label htmlFor="blood_type" className="text-slate-700 mb-2 block">
-                        Blood Type
+                      <Label htmlFor="doctor_number" className="text-slate-700 mb-2 block">
+                        Doctor Number
+                      </Label>
+                      <Input
+                        id="doctor_number"
+                        name="doctor_number"
+                        placeholder="Doctor license number"
+                        value={formData.doctor_number || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="specialty_name" className="text-slate-700 mb-2 block">
+                        Specialty
                       </Label>
                       <Select
-                        value={formData.blood_type}
-                        onValueChange={(value) => handleSelectChange("blood_type", value)}
+                        value={formData.specialty_name}
+                        onValueChange={(value) => handleSelectChange("specialty_name", value)}
                       >
                         <SelectTrigger className="border-slate-200">
-                          <SelectValue placeholder="Select blood type" />
+                          <SelectValue placeholder="Select specialty" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="A+">A+</SelectItem>
-                          <SelectItem value="A-">A-</SelectItem>
-                          <SelectItem value="B+">B+</SelectItem>
-                          <SelectItem value="B-">B-</SelectItem>
-                          <SelectItem value="AB+">AB+</SelectItem>
-                          <SelectItem value="AB-">AB-</SelectItem>
-                          <SelectItem value="O+">O+</SelectItem>
-                          <SelectItem value="O-">O-</SelectItem>
+                          <SelectItem value="Cardiology">Cardiology</SelectItem>
+                          <SelectItem value="Dermatology">Dermatology</SelectItem>
+                          <SelectItem value="Endocrinology">Endocrinology</SelectItem>
+                          <SelectItem value="Gastroenterology">Gastroenterology</SelectItem>
+                          <SelectItem value="Neurology">Neurology</SelectItem>
+                          <SelectItem value="Oncology">Oncology</SelectItem>
+                          <SelectItem value="Pediatrics">Pediatrics</SelectItem>
+                          <SelectItem value="Psychiatry">Psychiatry</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label htmlFor="allergies" className="text-slate-700 mb-2 block">
-                        Allergies
+                      <Label htmlFor="description" className="text-slate-700 mb-2 block">
+                        Professional Description
                       </Label>
-                      <Input
-                        id="allergies"
-                        name="allergies"
-                        placeholder="None or list allergies"
-                        value={formData.allergies || ""}
+                      <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Describe your expertise and experience"
+                        value={formData.description || ""}
                         onChange={handleChange}
-                        className="border-slate-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="height" className="text-slate-700 mb-2 block">
-                        Height
-                      </Label>
-                      <Input
-                        id="height"
-                        name="height"
-                        placeholder="e.g., 172 cm"
-                        value={formData.height || ""}
-                        onChange={handleChange}
-                        className="border-slate-200"
+                        className="border-slate-200 min-h-[100px]"
+                        required
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="weight" className="text-slate-700 mb-2 block">
-                        Weight
+                      <Label htmlFor="years_of_experience" className="text-slate-700 mb-2 block">
+                        Years of Experience
                       </Label>
                       <Input
-                        id="weight"
-                        name="weight"
-                        placeholder="e.g., 65 kg"
-                        value={formData.weight || ""}
+                        id="years_of_experience"
+                        name="years_of_experience"
+                        type="number"
+                        placeholder="Years of professional experience"
+                        value={formData.years_of_experience || ""}
                         onChange={handleChange}
                         className="border-slate-200"
+                        min="0"
+                        required
                       />
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                  </>
+                )}
 
-          {/* Password Step */}
-          {currentStep === "password" && (
-            <div className="space-y-6">
-              <div className="flex items-center text-teal-600 gap-2">
-                <Lock size={18} />
-              </div>
+                {/* Doctor general fields */}
+                {formData.type === "doctor_general" && (
+                  <>
+                    <div>
+                      <Label htmlFor="doctor_number" className="text-slate-700 mb-2 block">
+                        Doctor Number
+                      </Label>
+                      <Input
+                        id="doctor_number"
+                        name="doctor_number"
+                        placeholder="Doctor license number"
+                        value={formData.doctor_number || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                        required
+                      />
+                    </div>
 
-              <h2 className="text-xl font-semibold text-slate-800">Set your password</h2>
+                    <div>
+                      <Label htmlFor="years_of_experience" className="text-slate-700 mb-2 block">
+                        Years of Experience
+                      </Label>
+                      <Input
+                        id="years_of_experience"
+                        name="years_of_experience"
+                        type="number"
+                        placeholder="Years of professional experience"
+                        value={formData.years_of_experience || ""}
+                        onChange={handleChange}
+                        className="border-slate-200"
+                        min="0"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
 
-              <div className="space-y-2">
-                <div className="relative">
+                {/* Address fields for all user types */}
+                <div>
+                  <Label htmlFor="address_line1" className="text-slate-700 mb-2 block">
+                    Address
+                  </Label>
                   <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    value={formData.password}
+                    id="address_line1"
+                    name="address_line1"
+                    placeholder="Street address"
+                    value={formData.address_line1 || ""}
                     onChange={handleChange}
-                    className="border-slate-200 pr-10"
+                    className="border-slate-200"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                  {formData.password && (
-                    <div className="absolute right-10 top-1/2 -translate-y-1/2">
-                      {passwordStrength === "Strong" && <Check size={18} className="text-green-500" />}
-                    </div>
-                  )}
                 </div>
 
-                {formData.password && (
-                  <div
-                    className={cn(
-                      "text-sm",
-                      passwordStrength === "Weak" && "text-red-500",
-                      passwordStrength === "Medium" && "text-orange-500",
-                      passwordStrength === "Strong" && "text-green-500",
-                    )}
-                  >
-                    Security Level: {passwordStrength}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="state" className="text-slate-700 mb-2 block">
+                      State
+                    </Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      placeholder="State"
+                      value={formData.state || ""}
+                      onChange={handleChange}
+                      className="border-slate-200"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="postal_code" className="text-slate-700 mb-2 block">
+                      Postal Code
+                    </Label>
+                    <Input
+                      id="postal_code"
+                      name="postal_code"
+                      placeholder="Postal code"
+                      value={formData.postal_code || ""}
+                      onChange={handleChange}
+                      className="border-slate-200"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Patient-specific fields */}
+                {formData.type === "patient" && (
+                  <div>
+                    <Label htmlFor="country" className="text-slate-700 mb-2 block">
+                      Country
+                    </Label>
+                    <Input
+                      id="country"
+                      name="country"
+                      placeholder="Country"
+                      value={formData.country || ""}
+                      onChange={handleChange}
+                      className="border-slate-200"
+                      required
+                    />
                   </div>
                 )}
-              </div>
-            </div>
-          )}
 
-          {/* Phone Step */}
-          {currentStep === "phone" && (
-            <div className="space-y-6">
-              <div className="flex items-center text-teal-600 gap-2">
-                <Phone size={18} />
-              </div>
-
-              <h2 className="text-xl font-semibold text-slate-800">Enter your phone number</h2>
-
-              <div className="space-y-2">
-                <Input
-                  id="phone_number"
-                  name="phone_number"
-                  type="tel"
-                  placeholder="Phone number"
-                  value={formData.phone_number}
-                  onChange={handleChange}
-                  className="border-slate-200"
-                  required
-                />
-
-                <p className="text-xs text-slate-500">
-                  To confirm this number, we will send you a 3-digit code via SMS. This number will be used for
-                  two-factor authentication and appointment reminders.
-                </p>
+                <div>
+                  <Label htmlFor="preferred_language" className="text-slate-700 mb-2 block">
+                    Preferred Language
+                  </Label>
+                  <Select
+                    value={formData.preferred_language}
+                    onValueChange={(value) => handleSelectChange("preferred_language", value)}
+                  >
+                    <SelectTrigger className="border-slate-200">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Spanish">Spanish</SelectItem>
+                      <SelectItem value="French">French</SelectItem>
+                      <SelectItem value="German">German</SelectItem>
+                      <SelectItem value="Chinese">Chinese</SelectItem>
+                      <SelectItem value="Japanese">Japanese</SelectItem>
+                      <SelectItem value="Arabic">Arabic</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
@@ -884,22 +685,51 @@ export default function SignUpForm() {
           {/* Terms Step */}
           {currentStep === "terms" && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-slate-800">Terms of Use and Personal Data Protection Policy</h2>
+              <h2 className="text-xl font-semibold text-slate-800">Review Your Information</h2>
+
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">
+                  Account Type: {formData.type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </h3>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-slate-600">Username:</div>
+                  <div>{formData.username}</div>
+
+                  <div className="text-slate-600">Email:</div>
+                  <div>{formData.email}</div>
+
+                  <div className="text-slate-600">Name:</div>
+                  <div>
+                    {formData.first_name} {formData.last_name}
+                  </div>
+
+                  {formData.doctor_number && (
+                    <>
+                      <div className="text-slate-600">Doctor Number:</div>
+                      <div>{formData.doctor_number}</div>
+                    </>
+                  )}
+
+                  {formData.specialty_name && (
+                    <>
+                      <div className="text-slate-600">Specialty:</div>
+                      <div>{formData.specialty_name}</div>
+                    </>
+                  )}
+
+                  {formData.years_of_experience && (
+                    <>
+                      <div className="text-slate-600">Experience:</div>
+                      <div>{formData.years_of_experience} years</div>
+                    </>
+                  )}
+                </div>
+              </div>
 
               <p className="text-sm text-slate-600">
-                To create an account, please accept the{" "}
-                <a href="#" className="text-teal-600">
-                  Terms of Use
-                </a>
-                .
+                By clicking Submit, you agree to our Terms of Service and Privacy Policy.
               </p>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox id="terms" checked={formData.acceptTerms} onCheckedChange={handleCheckboxChange} />
-                <Label htmlFor="terms" className="text-sm">
-                  I have read and accept the Terms of Use
-                </Label>
-              </div>
             </div>
           )}
 
@@ -920,6 +750,8 @@ export default function SignUpForm() {
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   <span>Processing...</span>
                 </div>
+              ) : currentStep === "terms" ? (
+                "Submit"
               ) : (
                 "Continue"
               )}
