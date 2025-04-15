@@ -16,12 +16,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/app/providers"
-
+import { SERVER_URL } from "../../../../../config"
 // Define the steps in the sign-up process
 type Step = "userType" | "details" | "terms"
 
 // Define the user types
-type UserType = "doctor_special" | "doctor_general" | "patient"
+type UserType = "doctor_specialty" | "doctor_general" | "patient"
 
 // Define the form data structure
 interface SignUpFormData {
@@ -73,7 +73,7 @@ const formatDataForApi = (data: SignUpFormData) => {
       postal_code: data.postal_code,
       preferred_language: data.preferred_language,
     }
-  } else if (data.type === "doctor_special") {
+  } else if (data.type === "doctor_specialty") {
     return {
       ...baseData,
       doctor_number: data.doctor_number,
@@ -285,7 +285,7 @@ export default function SignUpForm() {
           !!formData.first_name &&
           !!formData.last_name
 
-        if (formData.type === "doctor_special") {
+        if (formData.type === "doctor_specialty") {
           return commonFieldsValid && !!formData.doctor_number && !!formData.specialty_name && !!formData.description
         } else if (formData.type === "doctor_general") {
           return commonFieldsValid && !!formData.doctor_number && !!formData.years_of_experience
@@ -346,8 +346,8 @@ export default function SignUpForm() {
               <div className="space-y-4">
                 <RadioGroup value={formData.type} onValueChange={handleUserTypeChange} className="flex flex-col gap-3">
                   <div className="flex items-center border rounded-md px-4 py-3 w-full">
-                    <RadioGroupItem value="doctor_special" id="doctor_special" />
-                    <Label htmlFor="doctor_special" className="ml-2 flex items-center gap-2">
+                    <RadioGroupItem value="doctor_specialty" id="doctor_specialty" />
+                    <Label htmlFor="doctor_specialty" className="ml-2 flex items-center gap-2">
                       <Stethoscope size={16} className="text-teal-600" />
                       <span>Specialist Doctor</span>
                     </Label>
@@ -379,7 +379,7 @@ export default function SignUpForm() {
               <div className="flex items-center text-teal-600 gap-2">
                 {formData.type.includes("doctor") ? <Stethoscope size={18} /> : <User size={18} />}
                 <span>
-                  {formData.type === "doctor_special"
+                  {formData.type === "doctor_specialty"
                     ? "Specialist Doctor"
                     : formData.type === "doctor_general"
                       ? "General Doctor"
@@ -478,7 +478,7 @@ export default function SignUpForm() {
                 </div>
 
                 {/* Doctor special fields */}
-                {formData.type === "doctor_special" && (
+                {formData.type === "doctor_specialty" && (
                   <>
                     <div>
                       <Label htmlFor="doctor_number" className="text-slate-700 mb-2 block">
