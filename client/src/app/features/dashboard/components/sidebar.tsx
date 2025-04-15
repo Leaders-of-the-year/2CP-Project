@@ -52,7 +52,7 @@ export function AppSidebar({ navItems, className, ...props }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href="/logout" className="text-teal-600 flex items-center gap-2" onClick={()=>(logout())}>
+              <a href="/login" className="text-teal-600 flex items-center gap-2" onClick={()=>(logout())}>
                 <LogOut className="h-5 w-5" />
                 <span>Sign out</span>
               </a>

@@ -44,7 +44,7 @@ export default function DoctorSchedulePage() {
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      if (token) {
+      if (!token) {
         router.push("/login")
         return
       }
@@ -76,7 +76,7 @@ export default function DoctorSchedulePage() {
               id: "p1",
               first_name: "Winston",
               family_name: "Churchill",
-              image: "/placeholder.svg?height=40&width=40",
+              image: "/test1.jpeg",
               age: 62,
               gender: "Male",
             },
@@ -92,7 +92,7 @@ export default function DoctorSchedulePage() {
               id: "p2",
               first_name: "Joseph",
               family_name: "Stalin",
-              image: "/placeholder.svg?height=40&width=40",
+              image: "/test2.jpeg",
               age: 58,
               gender: "Male",
             },
@@ -108,7 +108,7 @@ export default function DoctorSchedulePage() {
               id: "p3",
               first_name: "Xi",
               family_name: "Jinping",
-              image: "/placeholder.svg?height=40&width=40",
+              image: "/test3.jpeg",
               age: 65,
               gender: "Male",
             },
@@ -283,7 +283,7 @@ export default function DoctorSchedulePage() {
               <div className="flex items-start gap-3">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={appointment.patient.image || "/placeholder.svg?height=48&width=48"}
+                    src={appointment.patient.image || "//test1.jpegs"}
                     alt={appointment.patient.first_name}
                     fill
                     className="object-cover"

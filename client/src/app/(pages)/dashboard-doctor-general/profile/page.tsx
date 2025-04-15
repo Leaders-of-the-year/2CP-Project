@@ -66,7 +66,7 @@ export default function DoctorGeneralProfilePage() {
 
       try {
         setLoading(true)
-        const response = await fetch(`${SERVER_URL}/api/profile/doctor-general`, {
+        const response = await fetch(`${SERVER_URL}/api/dashboard_doctors_general/doctor_profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -77,7 +77,8 @@ export default function DoctorGeneralProfilePage() {
         }
 
         const data = await response.json()
-        setProfile(data)
+        console.log(data)
+        setProfile(data.doctor)
       } catch (err) {
         setError("Failed to load profile data")
         console.error(err)
@@ -120,7 +121,7 @@ export default function DoctorGeneralProfilePage() {
           <CardContent className="p-6 flex flex-col items-center">
             <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4">
               <Image
-                src={`/placeholder.svg?height=128&width=128`}
+                src={`/test7.jpeg`}
                 alt={`Dr. ${profile.first_name} ${profile.last_name}`}
                 fill
                 className="object-cover"

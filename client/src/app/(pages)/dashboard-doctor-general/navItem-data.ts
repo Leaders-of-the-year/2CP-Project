@@ -7,7 +7,7 @@ export const navItems = [
     {
       title: "Scheduled",
       icon: "/Scheduled.svg",
-      url: "/scheduled",
+      url: "/dashboard-doctor-general/scheduled",
     },
     {
       title: "Settings",
@@ -23,6 +23,6 @@ export const navItems = [
     {
       title: "My Profile",
       icon: "/profile.svg",
-      url: "/profile",
+      url: "/dashboard-doctor-general/profile",
     },
   ]

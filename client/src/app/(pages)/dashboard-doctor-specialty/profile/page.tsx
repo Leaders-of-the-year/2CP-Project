@@ -70,7 +70,7 @@ export default function DoctorSpecialtyProfilePage() {
 
       try {
         setLoading(true)
-        const response = await fetch(`${SERVER_URL}/api/profile/doctor-specialty`, {
+        const response = await fetch(`${SERVER_URL}/api/dashboard_doctors_specialty/doctor_profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -81,7 +81,8 @@ export default function DoctorSpecialtyProfilePage() {
         }
 
         const data = await response.json()
-        setProfile(data)
+        console.log(Object.keys(data.doctorProfile),data.doctorProfile,"hellllllo")
+        setProfile(data.doctorProfile)
       } catch (err) {
         setError("Failed to load profile data")
         console.error(err)
@@ -124,7 +125,7 @@ export default function DoctorSpecialtyProfilePage() {
           <CardContent className="p-6 flex flex-col items-center">
             <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4">
               <Image
-                src={`/placeholder.svg?height=128&width=128`}
+                src={`/test6.jpeg`}
                 alt={`Dr. ${profile.first_name} ${profile.last_name}`}
                 fill
                 className="object-cover"

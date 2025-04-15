@@ -7,7 +7,7 @@ export const navItems = [
     {
       title: "Scheduled",
       icon: "/Scheduled.svg",
-      url: "/scheduled",
+      url: "/dashboard-doctor-specialty/schedule",
     },
     {
       title: "Settings",
@@ -18,11 +18,11 @@ export const navItems = [
     {
       title: "My Patients",
       icon: "/Stethoscope.svg",
-      url: "/dashboard-doctor-special/waiting-list",
+      url: "/dashboard-doctor-specialty/waiting-list",
     },
     {
       title: "My Profile",
       icon: "/profile.svg",
-      url: "/dashboard-doctor-special/profile",
+      url: "/dashboard-doctor-specialty/profile",
     },
   ]
