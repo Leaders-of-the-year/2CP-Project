@@ -2,7 +2,7 @@ export const navItems = [
     {
       title: "History",
       icon: "/Clock.svg",
-      url: "/history",
+      url: "/dashboard-patient/history",
     },
     {
       title: "Scheduled",

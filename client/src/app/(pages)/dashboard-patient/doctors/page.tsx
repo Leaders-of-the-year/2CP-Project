@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/providers"
@@ -9,8 +11,27 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, SlidersHorizontal, Star, Phone } from 'lucide-react'
+import { Search, SlidersHorizontal, Star, Calendar } from "lucide-react"
 import { SERVER_URL } from "../../../../../config"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useQuery } from "@tanstack/react-query"
+
+// Update the AppointmentFormData interface to match the required API structure
+interface AppointmentFormData {
+  doctor_id: number
+  appointment_date: string
+  reason: string
+}
 
 interface Doctor {
   first_name: string
@@ -24,114 +45,224 @@ interface Doctor {
 export default function DoctorsPage() {
   const router = useRouter()
   const { token } = useAuth()
-  const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("all")
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false)
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
+  // Replace the useState for appointmentData with this simplified version
+  const [appointmentData, setAppointmentData] = useState<AppointmentFormData>({
+    doctor_id: 0,
+    appointment_date: "",
+    reason: "",
   })
 
-  useEffect(() => {
-    const fetchDoctors = async () => {
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+
+  // Generate available times for the select dropdown
+  const availableTimes = Array.from({ length: 9 }, (_, i) => {
+    const hour = i + 9 // Start from 9 AM
+    return `${hour}:00 ${hour < 12 ? "AM" : "PM"}`
+  })
+
+  // Replace useEffect with React Query for fetching doctors
+  const {
+    data: doctorsData,
+    isLoading,
+    error: fetchError,
+  } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: async () => {
       if (!token) {
         router.push("/login")
-        return
+        throw new Error("No authentication token")
       }
 
-      try {
-        setLoading(true)
-        const response = await fetch(`${SERVER_URL}/api/dashboard_patients/patient/mydoctors`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      const response = await fetch(`${SERVER_URL}/api/dashboard_patients/patient/mydoctors`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch doctors")
-        }
-
-        const data = await response.json()
-        console.log(data, "dataaa")
-        
-        // Ensure data is an array before setting state
-        const doctorsArray = Array.isArray(data.doctor_specialty) ? data.doctor_specialty : 
-                            (data.doctor_specialty && Array.isArray(data.doctors)) ? data.doctors : []
-        
-        setDoctors(doctorsArray)
-        setFilteredDoctors(doctorsArray)
-      } catch (err) {
-        setError("Failed to load doctors")
-        console.error(err)
-        
-        // Fallback data for demo purposes with the new structure
-        const fallbackData = [
-          { doctor_number: "DOC-83912", first_name: "Alice", last_name: "Walker", specialty_name: "Pediatrics", available: true },
-          { doctor_number: "DOC-74523", first_name: "Monkey D", last_name: "Luffy", specialty_name: "Cardiology", available: true },
-          { doctor_number: "DOC-12345", first_name: "Jacob", last_name: "Martin", specialty_name: "Cardiology", available: true },
-          { doctor_number: "DOC-67890", first_name: "Tony", last_name: "Chopper", specialty_name: "Gastroenterology", available: true },
-          { doctor_number: "DOC-54321", first_name: "Nico", last_name: "Robin", specialty_name: "Endocrinology", available: true },
-          { doctor_number: "DOC-98765", first_name: "Sophia", last_name: "Walker", specialty_name: "Pulmonology", available: true },
-          { doctor_number: "DOC-24680", first_name: "Silver", last_name: "Rayleigh", specialty_name: "Neurology", available: true },
-          { doctor_number: "DOC-13579", first_name: "Roronoa", last_name: "Zoro", specialty_name: "Anesthesiology", available: true },
-          { doctor_number: "DOC-86420", first_name: "Nami", last_name: "", specialty_name: "Dermatology", available: true },
-          { doctor_number: "DOC-97531", first_name: "Brook", last_name: "", specialty_name: "Orthopedics", available: true },
-          { doctor_number: "DOC-75319", first_name: "Vinesmok", last_name: "Sanji", specialty_name: "Plastic Surgery", available: true },
-          { doctor_number: "DOC-15948", first_name: "Emily", last_name: "Turner", specialty_name: "Neurology", available: true },
-          { doctor_number: "DOC-26837", first_name: "Benjamin", last_name: "Harris", specialty_name: "Cardiology", available: true },
-          { doctor_number: "DOC-37926", first_name: "Olivia", last_name: "Clark", specialty_name: "Family Medicine", available: true },
-          { doctor_number: "DOC-48015", first_name: "Liam", last_name: "Thompson", specialty_name: "Infectious Disease", available: true },
-          { doctor_number: "DOC-59104", first_name: "Noah", last_name: "Mitchell", specialty_name: "Consultant", available: true },
-        ]
-        setDoctors(fallbackData)
-        setFilteredDoctors(fallbackData)
-      } finally {
-        setLoading(false)
+      if (!response.ok) {
+        throw new Error("Failed to fetch doctors")
       }
-    }
 
-    fetchDoctors()
-  }, [token, router])
+      const data = await response.json()
 
-  useEffect(() => {
-    // Ensure doctors is an array before filtering
+      // Ensure data is an array before returning
+      const doctorsArray = Array.isArray(data.doctor_specialty)
+        ? data.doctor_specialty
+        : data.doctor_specialty && Array.isArray(data.doctors)
+          ? data.doctors
+          : []
+
+      return doctorsArray
+    },
+    enabled: !!token, // Only run query if token exists
+    retry: 1,
+    // Fallback data for when the query fails
+    onError: (err) => {
+      console.error("Error fetching doctors:", err)
+    },
+  })
+
+  // Fallback data for demo purposes
+  const fallbackData = [
+    {
+      doctor_number: "DOC-83912",
+      first_name: "Alice",
+      last_name: "Walker",
+      specialty_name: "Pediatrics",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-74523",
+      first_name: "Monkey D",
+      last_name: "Luffy",
+      specialty_name: "Cardiology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-12345",
+      first_name: "Jacob",
+      last_name: "Martin",
+      specialty_name: "Cardiology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-67890",
+      first_name: "Tony",
+      last_name: "Chopper",
+      specialty_name: "Gastroenterology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-54321",
+      first_name: "Nico",
+      last_name: "Robin",
+      specialty_name: "Endocrinology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-98765",
+      first_name: "Sophia",
+      last_name: "Walker",
+      specialty_name: "Pulmonology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-24680",
+      first_name: "Silver",
+      last_name: "Rayleigh",
+      specialty_name: "Neurology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-13579",
+      first_name: "Roronoa",
+      last_name: "Zoro",
+      specialty_name: "Anesthesiology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-86420",
+      first_name: "Nami",
+      last_name: "",
+      specialty_name: "Dermatology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-97531",
+      first_name: "Brook",
+      last_name: "",
+      specialty_name: "Orthopedics",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-75319",
+      first_name: "Vinesmok",
+      last_name: "Sanji",
+      specialty_name: "Plastic Surgery",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-15948",
+      first_name: "Emily",
+      last_name: "Turner",
+      specialty_name: "Neurology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-26837",
+      first_name: "Benjamin",
+      last_name: "Harris",
+      specialty_name: "Cardiology",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-37926",
+      first_name: "Olivia",
+      last_name: "Clark",
+      specialty_name: "Family Medicine",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-48015",
+      first_name: "Liam",
+      last_name: "Thompson",
+      specialty_name: "Infectious Disease",
+      available: true,
+    },
+    {
+      doctor_number: "DOC-59104",
+      first_name: "Noah",
+      last_name: "Mitchell",
+      specialty_name: "Consultant",
+      available: true,
+    },
+  ]
+
+  // Use the data from React Query or fallback data if query failed
+  const doctors = doctorsData || (fetchError ? fallbackData : [])
+
+  // Filter doctors based on search query and active filter
+  const filteredDoctors = (() => {
     if (!Array.isArray(doctors)) {
-      console.error("doctors is not an array:", doctors)
-      setFilteredDoctors([])
-      return
+      return []
     }
-    
-    // Filter doctors based on search query and active filter
+
     let result = [...doctors]
-    
+
     // Apply search filter
     if (searchQuery) {
       result = result.filter(
-        doctor => 
+        (doctor) =>
           `${doctor.first_name} ${doctor.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doctor.specialty_name.toLowerCase().includes(searchQuery.toLowerCase())
+          doctor.specialty_name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     }
-    
+
     // Apply tab filter
     if (activeFilter === "top-rating") {
       // Since we don't have ratings in the new structure, we'll just show all doctors for this filter
-      // You can modify this logic if you have a different way to determine top doctors
       result = result
     } else if (activeFilter === "a-z") {
-      result = [...result].sort((a, b) => 
-        `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
+      result = [...result].sort((a, b) =>
+        `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`),
       )
     }
-    
-    setFilteredDoctors(result)
-  }, [searchQuery, activeFilter, doctors])
+
+    return result
+  })()
 
   const handleFilterChange = (value: string) => {
     setActiveFilter(value)
@@ -141,26 +272,80 @@ export default function DoctorsPage() {
     setSearchQuery(e.target.value)
   }
 
-  const handleMakeCall = (doctorNumber: string) => {
-    console.log(`Initiating call with doctor number: ${doctorNumber}`)
-    // Implement call functionality or navigate to call page
-    router.push(`/call/${doctorNumber}`)
-  }
-
   const handleViewProfile = (doctorNumber: string) => {
     router.push(`/doctor/${doctorNumber}`)
   }
 
-  if (loading) {
+  // Update the handleMakeSchedule function to set the doctor_id correctly
+  const handleMakeSchedule = (doctor: Doctor) => {
+    setSelectedDoctor(doctor)
+    setAppointmentData({
+      ...appointmentData,
+      doctor_id: doctor.user_id || 0, // Use user_id as doctor_id
+    })
+    setAppointmentModalOpen(true)
+    setSubmitSuccess(false)
+    setSubmitError(null)
+  }
+
+  // Replace the handleSubmitAppointment function with this updated version
+  const handleSubmitAppointment = async () => {
+    if (!token || !selectedDoctor) return
+
+    setSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      // Combine date and time into the ISO format required by the API
+      const dateTime = new Date(appointmentData.appointment_date)
+
+      const requestData = {
+        doctor_id: appointmentData.doctor_id,
+        appointment_date: dateTime.toISOString(),
+        reason: appointmentData.reason,
+      }
+
+      console.log("Sending appointment data:", requestData)
+
+      const response = await fetch(`${SERVER_URL}/api/dashboard_patients/schedule/new`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to schedule appointment")
+      }
+
+      setSubmitSuccess(true)
+
+      // Reset form after successful submission
+      setTimeout(() => {
+        setAppointmentModalOpen(false)
+        setAppointmentData({
+          doctor_id: 0,
+          appointment_date: "",
+          reason: "",
+        })
+      }, 2000)
+    } catch (err) {
+      console.error("Error scheduling appointment:", err)
+      setSubmitError("Failed to schedule appointment. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
       </div>
     )
   }
-
-  // Safety check to ensure filteredDoctors is an array before rendering
-  const doctorsToDisplay = Array.isArray(filteredDoctors) ? filteredDoctors : [];
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
@@ -187,12 +372,7 @@ export default function DoctorsPage() {
         <div className="flex w-full md:w-auto gap-2">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            <Input
-              placeholder="Search"
-              className="pl-10 border-gray-200"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
+            <Input placeholder="Search" className="pl-10 border-gray-200" value={searchQuery} onChange={handleSearch} />
           </div>
           <Button variant="outline" size="icon" className="border-gray-200">
             <SlidersHorizontal size={18} />
@@ -200,63 +380,56 @@ export default function DoctorsPage() {
         </div>
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-500 p-4 rounded-md mb-6">
-          {error}
-        </div>
-      )}
+      {fetchError && <div className="bg-red-50 text-red-500 p-4 rounded-md mb-6">Failed to load doctors</div>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {doctorsToDisplay.map((doctor) => (
-          <Card key={doctor.doctor_number} className="overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+        {filteredDoctors.map((doctor) => (
+          <Card
+            key={doctor.doctor_number}
+            className="overflow-hidden border border-gray-100 hover:shadow-md transition-shadow"
+          >
             <CardContent className="p-0">
               <div className="p-6 flex flex-col items-center">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden mb-3 border-2 border-gray-100">
                   <Image
-              src={`/test${Math.floor(Math.random() * 9)}.jpeg`}
-
+                    src={`/test${Math.floor(Math.random() * 9)}.jpeg`}
                     alt={`${doctor.first_name} ${doctor.last_name}`}
                     fill
                     className="object-cover"
                   />
                 </div>
-                
-            {/* Since we don't have ratings in the new structure, showing a random star rating between 1 and 5 */}
-<div className="flex mb-1">
-  {[...Array(Math.floor(Math.random() * 5) + 1)].map((_, i) => (
-    <Star 
-      key={i} 
-      size={16} 
-      className="text-teal-500 fill-teal-500" 
-    />
-  ))}
-</div>
 
-                
-                <h3 className="font-medium text-center">Dr. {doctor.first_name} {doctor.last_name}</h3>
-                
-                <Badge className="mt-1 bg-teal-100 text-teal-700 hover:bg-teal-100">
-                  {doctor.specialty_name}
-                </Badge>
-                
+                {/* Since we don't have ratings in the new structure, showing a random star rating between 1 and 5 */}
+                <div className="flex mb-1">
+                  {[...Array(Math.floor(Math.random() * 5) + 1)].map((_, i) => (
+                    <Star key={i} size={16} className="text-teal-500 fill-teal-500" />
+                  ))}
+                </div>
+
+                <h3 className="font-medium text-center">
+                  Dr. {doctor.first_name} {doctor.last_name}
+                </h3>
+
+                <Badge className="mt-1 bg-teal-100 text-teal-700 hover:bg-teal-100">{doctor.specialty_name}</Badge>
+
                 <div className="grid grid-cols-2 gap-2 w-full mt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-xs border-gray-200"
                     onClick={() => handleViewProfile(doctor.doctor_number)}
                   >
                     Available
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-xs border-gray-200 flex items-center justify-center gap-1"
-                    onClick={() => handleMakeCall(doctor.doctor_number)}
+                    onClick={() => handleMakeSchedule(doctor)}
                   >
-                    <Phone size={12} />
-                    <span>Make a call</span>
+                    <Calendar size={12} />
+                    <span>Make a schedule</span>
                   </Button>
                 </div>
               </div>
@@ -265,11 +438,106 @@ export default function DoctorsPage() {
         ))}
       </div>
 
-      {doctorsToDisplay.length === 0 && (
+      {filteredDoctors.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">No doctors found matching your criteria.</p>
         </div>
       )}
+
+      {/* Appointment Scheduling Dialog */}
+      <Dialog open={appointmentModalOpen} onOpenChange={setAppointmentModalOpen}>
+        <DialogContent className="sm:max-w-md bg-alt">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">Schedule an Appointment</DialogTitle>
+            <DialogDescription className="text-center">
+              {selectedDoctor && (
+                <span className="font-medium text-teal-600">
+                  Dr. {selectedDoctor.first_name} {selectedDoctor.last_name} • {selectedDoctor.specialty_name}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Replace the form section in the Dialog with this simplified version */}
+          <div className="grid gap-4 py-2">
+            {submitSuccess ? (
+              <div className="bg-green-50 text-green-600 p-4 rounded-md text-center">
+                <p className="font-medium">Appointment scheduled successfully!</p>
+                <p className="text-sm mt-1">We'll notify you when the doctor confirms your appointment.</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-2">
+                  <Label htmlFor="appointment_date" className="text-sm font-medium">
+                    Appointment Date and Time
+                  </Label>
+                  <Input
+                    id="appointment_date"
+                    name="appointment_date"
+                    type="datetime-local"
+                    min={new Date().toISOString().split(".")[0].slice(0, -3)}
+                    value={appointmentData.appointment_date}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, appointment_date: e.target.value })}
+                    className="border-gray-200"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  <Label htmlFor="reason" className="text-sm font-medium">
+                    Reason for Visit
+                  </Label>
+                  <Textarea
+                    id="reason"
+                    name="reason"
+                    placeholder="Please briefly describe the reason for your appointment..."
+                    value={appointmentData.reason}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, reason: e.target.value })}
+                    className="border-gray-200 min-h-[100px]"
+                    required
+                  />
+                </div>
+
+                {submitError && <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">{submitError}</div>}
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="sm:justify-between">
+            {!submitSuccess && (
+              <>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="border-gray-200">
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  className="bg-main hover:bg-teal-600 text-white w-[80]"
+                  onClick={handleSubmitAppointment}
+                  disabled={submitting || !appointmentData.appointment_date || !appointmentData.reason}
+                >
+                  {submitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <span>Scheduling...</span>
+                    </div>
+                  ) : (
+                    "Schedule Appointment"
+                  )}
+                </Button>
+              </>
+            )}
+            {submitSuccess && (
+              <DialogClose asChild>
+                <Button type="button" className="bg-teal-500 hover:bg-teal-600 text-white">
+                  Close
+                </Button>
+              </DialogClose>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
