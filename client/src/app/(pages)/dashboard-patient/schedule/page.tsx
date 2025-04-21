@@ -8,7 +8,7 @@ import { useAuth } from "@/app/providers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SlidersHorizontal, Search, Trash2, Calendar, AlertCircle } from "lucide-react"
+import { SlidersHorizontal, Search, Trash2, Calendar, AlertCircle, PlusCircle, AlertTriangle } from 'lucide-react'
 import { SERVER_URL } from "../../../../../config"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
@@ -23,6 +23,9 @@ import {
 import { Label } from "@/components/ui/label"
 import { format, parseISO } from "date-fns"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,11 +48,24 @@ interface Appointment {
   updated_at: string
   doctor_first_name: string
   doctor_last_name: string
+  emergency?: boolean
 }
 
 interface AppointmentResponse {
   success: boolean
   appointments: Appointment[]
+}
+
+interface Doctor {
+  id: number
+  first_name: string
+  last_name: string
+  specialty_name: string
+}
+
+interface DoctorsResponse {
+  success: boolean
+  doctors: Doctor[]
 }
 
 export default function PatientSchedulePage() {
@@ -59,10 +75,19 @@ export default function PatientSchedulePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("all")
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false)
+  const [newAppointmentModalOpen, setNewAppointmentModalOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [newAppointmentDate, setNewAppointmentDate] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [appointmentToDelete, setAppointmentToDelete] = useState<number | null>(null)
+  
+  // New appointment form state
+  const [newAppointmentForm, setNewAppointmentForm] = useState({
+    doctor_id: "",
+    appointment_date: "",
+    reason: "",
+    emergency: false
+  })
 
   // Fetch appointments using React Query
   const {
@@ -92,6 +117,65 @@ export default function PatientSchedulePage() {
     },
     enabled: !!token,
     retry: 1,
+  })
+  
+  // Fetch available doctors
+  const { data: doctorsData } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: async () => {
+      if (!token) {
+        throw new Error("No authentication token")
+      }
+
+      const response = await fetch(`${SERVER_URL}/api/dashboard_patients/doctors`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch doctors")
+      }
+
+      const data: DoctorsResponse = await response.json()
+      return data.doctors || []
+    },
+    enabled: !!token,
+  })
+
+  // Create new appointment mutation
+  const createAppointmentMutation = useMutation({
+    mutationFn: async (appointmentData: {
+      doctor_id: number;
+      appointment_date: string;
+      reason: string;
+      emergency: boolean;
+    }) => {
+      const response = await fetch(`${SERVER_URL}/api/dashboard_patients/schedule/new`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(appointmentData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create appointment")
+      }
+
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] })
+      setNewAppointmentModalOpen(false)
+      setNewAppointmentForm({
+        doctor_id: "",
+        appointment_date: "",
+        reason: "",
+        emergency: false
+      })
+    },
   })
 
   // Cancel appointment mutation - updated to use PUT request to change status
@@ -183,6 +267,8 @@ export default function PatientSchedulePage() {
       result = result.filter((appointment) => appointment.status === "completed")
     } else if (activeFilter === "cancelled") {
       result = result.filter((appointment) => appointment.status === "cancelled")
+    } else if (activeFilter === "emergency") {
+      result = result.filter((appointment) => appointment.emergency === true)
     } else if (activeFilter === "by-date") {
       result = [...result].sort(
         (a, b) => new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime(),
@@ -232,6 +318,38 @@ export default function PatientSchedulePage() {
       })
     }
   }
+  
+  const handleNewAppointmentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setNewAppointmentForm(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+  
+  const handleEmergencyChange = (checked: boolean) => {
+    setNewAppointmentForm(prev => ({
+      ...prev,
+      emergency: checked
+    }))
+  }
+  
+  const handleCreateAppointment = () => {
+    const { doctor_id, appointment_date, reason, emergency } = newAppointmentForm
+    
+    if (!doctor_id || !appointment_date || !reason) {
+      return
+    }
+    
+    createAppointmentMutation.mutate({
+      doctor_id: Number(doctor_id),
+      appointment_date: new Date(appointment_date).toISOString(),
+      reason,
+      emergency
+    })
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -265,7 +383,16 @@ export default function PatientSchedulePage() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h1 className="text-2xl font-bold mb-6">My Appointments</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">My Appointments</h1>
+        <Button 
+          onClick={() => setNewAppointmentModalOpen(true)}
+          className="bg-teal-500 hover:bg-teal-600"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          New Appointment
+        </Button>
+      </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <Tabs defaultValue="all" onValueChange={handleFilterChange} className="w-full md:w-auto">
@@ -281,6 +408,9 @@ export default function PatientSchedulePage() {
             </TabsTrigger>
             <TabsTrigger value="cancelled" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
               Cancelled
+            </TabsTrigger>
+            <TabsTrigger value="emergency" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+              Emergency
             </TabsTrigger>
             <TabsTrigger value="by-date" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
               By Date
@@ -316,6 +446,7 @@ export default function PatientSchedulePage() {
               <th className="text-left py-3 px-4 font-medium">Reason</th>
               <th className="text-left py-3 px-4 font-medium">Appointment Date</th>
               <th className="text-left py-3 px-4 font-medium">Status</th>
+              <th className="text-left py-3 px-4 font-medium">Emergency</th>
               <th className="text-left py-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
@@ -342,6 +473,16 @@ export default function PatientSchedulePage() {
                 </td>
                 <td className="py-4 px-4">{formatDate(appointment.appointment_date)}</td>
                 <td className="py-4 px-4">{getStatusBadge(appointment.status)}</td>
+                <td className="py-4 px-4">
+                  {appointment.emergency ? (
+                    <Badge className="bg-red-100 text-red-800 hover:bg-red-100 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Emergency
+                    </Badge>
+                  ) : (
+                    <span className="text-gray-500">-</span>
+                  )}
+                </td>
                 <td className="py-4 px-4">
                   <div className="flex gap-2">
                     {appointment.status === "scheduled" && (
@@ -383,6 +524,114 @@ export default function PatientSchedulePage() {
           <p className="text-gray-500">No appointments found.</p>
         </div>
       )}
+
+      {/* New Appointment Dialog */}
+      <Dialog open={newAppointmentModalOpen} onOpenChange={setNewAppointmentModalOpen}>
+        <DialogContent className="bg-alt sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Schedule New Appointment</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to schedule a new appointment with a doctor.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="doctor_id" className="text-sm font-medium">
+                Select Doctor
+              </Label>
+              <Select 
+                name="doctor_id"
+                value={newAppointmentForm.doctor_id} 
+                onValueChange={(value) => setNewAppointmentForm(prev => ({ ...prev, doctor_id: value }))}
+              >
+                <SelectTrigger className="border-gray-200">
+                  <SelectValue placeholder="Select a doctor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {doctorsData?.map(doctor => (
+                    <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                      Dr. {doctor.first_name} {doctor.last_name} - {doctor.specialty_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="appointment_date" className="text-sm font-medium">
+                Appointment Date and Time
+              </Label>
+              <Input
+                id="appointment_date"
+                name="appointment_date"
+                type="datetime-local"
+                min={new Date().toISOString().split(".")[0].slice(0, -3)}
+                value={newAppointmentForm.appointment_date}
+                onChange={handleNewAppointmentChange}
+                className="border-gray-200"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="reason" className="text-sm font-medium">
+                Reason for Visit
+              </Label>
+              <Textarea
+                id="reason"
+                name="reason"
+                value={newAppointmentForm.reason}
+                onChange={handleNewAppointmentChange}
+                className="border-gray-200"
+                placeholder="Briefly describe your symptoms or reason for the appointment"
+                required
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="emergency" 
+                checked={newAppointmentForm.emergency}
+                onCheckedChange={handleEmergencyChange}
+              />
+              <div className="grid gap-1.5">
+                <Label 
+                  htmlFor="emergency" 
+                  className="text-sm font-medium flex items-center gap-1.5"
+                >
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  This is an emergency
+                </Label>
+                <p className="text-xs text-gray-500">
+                  Only check this if you require immediate medical attention
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="border-gray-200">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              className="bg-teal-500 hover:bg-teal-600 text-white"
+              onClick={handleCreateAppointment}
+              disabled={createAppointmentMutation.isPending || !newAppointmentForm.doctor_id || !newAppointmentForm.appointment_date || !newAppointmentForm.reason}
+            >
+              {createAppointmentMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <span>Scheduling...</span>
+                </div>
+              ) : (
+                "Schedule Appointment"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reschedule Dialog */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>

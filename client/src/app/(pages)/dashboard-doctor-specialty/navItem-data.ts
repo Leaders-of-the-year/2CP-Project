@@ -2,7 +2,7 @@ export const navItems = [
     {
       title: "History",
       icon: "/Clock.svg",
-      url: "/history",
+      url: "/dashboard-doctor-specialty/history",
     },
     {
       title: "Scheduled",
@@ -12,7 +12,7 @@ export const navItems = [
     {
       title: "Settings",
       icon: "/Settings.svg",
-      url: "/settings",
+      url: "/dashboard-doctor-specialty/settings",
     },
 
     {

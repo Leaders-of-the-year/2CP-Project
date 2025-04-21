@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, SlidersHorizontal, Star, Calendar } from "lucide-react"
+import { Search, SlidersHorizontal, Star, Calendar, AlertTriangle } from "lucide-react"
 import { SERVER_URL } from "../../../../../config"
 import {
   Dialog,
@@ -24,13 +24,15 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useQuery } from "@tanstack/react-query"
 
-// Update the AppointmentFormData interface to match the required API structure
+// Update the AppointmentFormData interface to include emergency flag
 interface AppointmentFormData {
   doctor_id: number
   appointment_date: string
   reason: string
+  emergency: boolean
 }
 
 interface Doctor {
@@ -53,11 +55,12 @@ export default function DoctorsPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
-  // Replace the useState for appointmentData with this simplified version
+  // Update appointmentData to include emergency flag
   const [appointmentData, setAppointmentData] = useState<AppointmentFormData>({
     doctor_id: 0,
     appointment_date: "",
     reason: "",
+    emergency: false,
   })
 
   const currentDate = new Date().toLocaleDateString("en-US", {
@@ -282,13 +285,22 @@ export default function DoctorsPage() {
     setAppointmentData({
       ...appointmentData,
       doctor_id: doctor.user_id || 0, // Use user_id as doctor_id
+      emergency: false, // Reset emergency flag when opening modal
     })
     setAppointmentModalOpen(true)
     setSubmitSuccess(false)
     setSubmitError(null)
   }
 
-  // Replace the handleSubmitAppointment function with this updated version
+  // Handle emergency checkbox change
+  const handleEmergencyChange = (checked: boolean) => {
+    setAppointmentData({
+      ...appointmentData,
+      emergency: checked,
+    })
+  }
+
+  // Update the handleSubmitAppointment function to include emergency flag
   const handleSubmitAppointment = async () => {
     if (!token || !selectedDoctor) return
 
@@ -303,6 +315,7 @@ export default function DoctorsPage() {
         doctor_id: appointmentData.doctor_id,
         appointment_date: dateTime.toISOString(),
         reason: appointmentData.reason,
+        emergency: appointmentData.emergency, // Include emergency flag in request
       }
 
       console.log("Sending appointment data:", requestData)
@@ -329,6 +342,7 @@ export default function DoctorsPage() {
           doctor_id: 0,
           appointment_date: "",
           reason: "",
+          emergency: false,
         })
       }, 2000)
     } catch (err) {
@@ -458,12 +472,16 @@ export default function DoctorsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Replace the form section in the Dialog with this simplified version */}
           <div className="grid gap-4 py-2">
             {submitSuccess ? (
               <div className="bg-green-50 text-green-600 p-4 rounded-md text-center">
                 <p className="font-medium">Appointment scheduled successfully!</p>
                 <p className="text-sm mt-1">We'll notify you when the doctor confirms your appointment.</p>
+                {appointmentData.emergency && (
+                  <p className="text-sm mt-2 font-medium text-red-600">
+                    Your emergency appointment has been prioritized.
+                  </p>
+                )}
               </div>
             ) : (
               <>
@@ -498,6 +516,26 @@ export default function DoctorsPage() {
                   />
                 </div>
 
+                {/* Emergency checkbox */}
+                <div className="flex items-start space-x-2 bg-red-50 p-3 rounded-md">
+                  <Checkbox
+                    id="emergency"
+                    checked={appointmentData.emergency}
+                    onCheckedChange={handleEmergencyChange}
+                    className="mt-1"
+                  />
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="emergency" className="text-sm font-medium flex items-center gap-1.5 text-red-700">
+                      <AlertTriangle className="h-4 w-4" />
+                      This is an emergency
+                    </Label>
+                    <p className="text-xs text-red-600">
+                      Check this box only if you require immediate medical attention. Emergency appointments are
+                      prioritized and may result in additional fees.
+                    </p>
+                  </div>
+                </div>
+
                 {submitError && <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">{submitError}</div>}
               </>
             )}
@@ -513,7 +551,9 @@ export default function DoctorsPage() {
                 </DialogClose>
                 <Button
                   type="button"
-                  className="bg-main hover:bg-teal-600 text-white w-[80]"
+                  className={`${
+                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-teal-500 hover:bg-teal-600"
+                  } text-white`}
                   onClick={handleSubmitAppointment}
                   disabled={submitting || !appointmentData.appointment_date || !appointmentData.reason}
                 >
@@ -521,6 +561,11 @@ export default function DoctorsPage() {
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                       <span>Scheduling...</span>
+                    </div>
+                  ) : appointmentData.emergency ? (
+                    <div className="flex items-center gap-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>Schedule Emergency</span>
                     </div>
                   ) : (
                     "Schedule Appointment"
@@ -530,7 +575,12 @@ export default function DoctorsPage() {
             )}
             {submitSuccess && (
               <DialogClose asChild>
-                <Button type="button" className="bg-teal-500 hover:bg-teal-600 text-white">
+                <Button
+                  type="button"
+                  className={`${
+                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-teal-500 hover:bg-teal-600"
+                  } text-white`}
+                >
                   Close
                 </Button>
               </DialogClose>
