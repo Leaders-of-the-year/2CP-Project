@@ -7,7 +7,6 @@ import { useMutation } from "@tanstack/react-query"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/app/providers"
@@ -34,7 +33,7 @@ export default function SignInForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // Important for cookies
+        credentials: "include",
       })
 
       if (!response.ok) {
@@ -45,9 +44,7 @@ export default function SignInForm() {
       return response.json()
     },
     onSuccess: (data) => {
-      console.log("Sign in successful:", data)
 
-      // The login function will handle redirecting to the appropriate dashboard
       login(data.token, data.user)
 
       toast({
@@ -56,7 +53,6 @@ export default function SignInForm() {
       })
     },
     onError: (error) => {
-      console.error("Sign in failed:", error)
       toast({
         title: "Sign in failed",
         description: error instanceof Error ? error.message : "An error occurred",
@@ -119,20 +115,7 @@ export default function SignInForm() {
               </a>
             </div>
           </div>
-          <RadioGroup defaultValue="doctor" className="flex space-x-12">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="doctor" id="doctor" />
-              <Label htmlFor="doctor" className="text-slate-700">
-                Doctor
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="patient" id="patient" />
-              <Label htmlFor="patient" className="text-slate-700">
-                Patient
-              </Label>
-            </div>
-          </RadioGroup>
+
           <div className="flex items-center space-x-2">
             <Checkbox id="remember" defaultChecked={true} />
             <Label htmlFor="remember" className="text-slate-700">

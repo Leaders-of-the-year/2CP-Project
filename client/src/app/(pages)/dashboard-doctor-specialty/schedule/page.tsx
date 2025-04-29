@@ -214,7 +214,7 @@ export default function DoctorSchedulePage() {
 
   const handleViewPatient = (patientId: string) => {
     // Navigate to the patient profile page with the patient ID
-    router.push(`/patients/${patientId}`)
+    router.push(`/dashboard-doctor-specialty/schedule/patients/${patientId}`)
   }
 
   const formatAppointmentDate = (dateString: string) => {

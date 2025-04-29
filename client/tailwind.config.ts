@@ -14,7 +14,7 @@ export default {
   			sans: 'var(--font-sans)'
   		},
   		colors: {
-  			main: 'rgba(55, 75, 82, 1)',
+  			main: '#097695',
   			second: 'rgba(150, 175, 184, 1)',
   			alt: 'rgba(244, 244, 244, 1)',
   			night: 'hsl(0, 0%, 0%)',

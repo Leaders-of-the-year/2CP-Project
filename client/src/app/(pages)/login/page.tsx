@@ -10,13 +10,12 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (token && role) {
-      // Redirect to the appropriate dashboard based on role
       const dashboardRoute =
         role === "patient"
-          ? "/dashboard/patient"
+          ? "/dashboard-patient/profile"
           : role === "doctor_general"
-            ? "/dashboard/doctor-general"
-            : "/dashboard/doctor-specialty"
+            ? "/dashboard-doctor-general/profile"
+            : "/dashboard-doctor-specialty/profile"
 
       router.push(dashboardRoute)
     }

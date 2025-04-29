@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Main colors */
-    --main: 55 18% 27%;  /* Converted from rgba(55, 75, 82, 1) */
+    --main: "#097695"; 
     --secondary: "#96AFB8";  /* Converted from rgba(150, 175, 184, 1) */
     --alt: 0 0% 96%;  /* Converted from rgba(244, 244, 244, 1) */
     --black: 0 0% 0%;  /* Converted from rgba(0, 0, 0, 1) */

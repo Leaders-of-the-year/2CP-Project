@@ -12,7 +12,7 @@ export const navItems = [
     {
       title: "Settings",
       icon: "/Settings.svg",
-      url: "/settings",
+      url: "/dashboard-patient/settings",
     },
 
     {
