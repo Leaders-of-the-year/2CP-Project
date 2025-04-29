@@ -100,7 +100,7 @@ export default function DoctorsPage() {
       }
 
       const data = await response.json()
-
+      console.log("dadta ",data)
       // Ensure data is an array before returning
       const doctorsArray = Array.isArray(data.doctor_specialty)
         ? data.doctor_specialty
@@ -276,7 +276,7 @@ export default function DoctorsPage() {
   }
 
   const handleViewProfile = (doctorNumber: string) => {
-    router.push(`/doctor/${doctorNumber}`)
+    router.push(`doctors/doctor/${doctorNumber}`)
   }
 
   // Update the handleMakeSchedule function to set the doctor_id correctly
@@ -431,7 +431,7 @@ export default function DoctorsPage() {
                     variant="outline"
                     size="sm"
                     className="text-xs border-gray-200"
-                    onClick={() => handleViewProfile(doctor.doctor_number)}
+                    onClick={() => handleViewProfile(doctor.user_id)}
                   >
                     Available
                   </Button>
