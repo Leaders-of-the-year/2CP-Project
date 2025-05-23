@@ -10,16 +10,16 @@ export default function CTASection() {
             Join thousands of patients and doctors who are already benefiting from our telemedicine platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-alt text-main hover:bg-alt/90 w-[80] text-lg px-8 py-6">
+            <Link href="/register">
+              <Button className="bg-alt text-main hover:bg-alt/90 w-[80] text-lg px-8 py-6">
+                Sign Up as Patient
+              </Button>
+            </Link>
               <Link href="/register">
-              Sign Up as Patient
-              </Link>
-            </Button>
             <Button variant="outline" className="border-alt w-[80] bg-main text-alt hover:bg-main/80 text-lg px-8 py-6">
-              <Link href="/register">
               Join as Doctor
-              </Link>
             </Button>
+              </Link>
           </div>
         </div>
       </div>

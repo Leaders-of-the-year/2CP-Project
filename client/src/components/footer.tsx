@@ -80,6 +80,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Newsletter</h4>
             <p className="text-alt/70 mb-4">Subscribe to our newsletter for the latest updates.</p>
             <div className="flex gap-2">
+              {/* TODO:{add email service} */}
               <Input
                 type="email"
                 placeholder="Your email"

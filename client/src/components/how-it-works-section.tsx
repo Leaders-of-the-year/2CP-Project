@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-
+import Link from "next/link"
 export default function HowItWorksSection() {
   const steps = [
     {
@@ -57,7 +57,11 @@ export default function HowItWorksSection() {
         </div>
 
         <div className="text-center">
-          <Button className="bg-main hover:bg-main/9 w-[80] 0 text-alt text-lg px-8 py-6">Get Started Now</Button>
+          <Link href="/login">
+          <Button className="bg-main hover:bg-main/9 w-[80] 0 text-alt text-lg px-8 py-6">
+          Get Started Now
+          </Button>
+          </Link>
         </div>
       </div>
     </section>
