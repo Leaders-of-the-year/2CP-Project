@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Canvas } from "@react-three/fiber"
 import { Suspense } from "react"
+import Link from "next/link"
 import MedicalScene from "./medical-scene"
 
 export default function HeroSection() {
@@ -28,9 +29,15 @@ export default function HeroSection() {
             Connect with qualified doctors from the comfort of your home through secure video consultations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <Button className="bg-main hover:bg-main/90w text-alt w-[80] text-lg px-8 py-6">Book Appointment</Button>
+            <Button className="bg-main hover:bg-main/90w text-alt w-[80] text-lg px-8 py-6">
+            <Link href="/dashboard-patient/schedule">
+            Book Appointment
+            </Link>
+            </Button>
             <Button variant="outline" className="border-main  text-main hover:bg-main/10 text-lg px-8 py-6">
+            <Link href="/dashboard-doctor/profile">
               For Doctors
+            </Link>
             </Button>
           </div>
         </div>

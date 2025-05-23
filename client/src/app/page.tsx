@@ -1,7 +1,4 @@
-import Dashboard from "@/app/features/dashboard/dashboard";
-
+import Home from "./(pages)/welcome/page"
 export default function Page() {
-  return  <div className="bg-gray-100">  
-  <Dashboard />
-  </div>
+  return  <Home />
 }
