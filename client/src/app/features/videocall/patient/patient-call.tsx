@@ -312,7 +312,7 @@ export default function Patient() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
                   <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">Dr Giraffe</Badge>
+                <Badge className="absolute bottom-4 left-4 bg-main/90 text-white px-3 py-1">Dr Giraffe</Badge>
               </div>
 
               {/* Patient's video (self view) */}
@@ -320,7 +320,7 @@ export default function Patient() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
                   <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">You</Badge>
+                <Badge className="absolute bottom-4 left-4 bg-main/90 text-white px-3 py-1">You</Badge>
               </div>
             </div>
           ) : (

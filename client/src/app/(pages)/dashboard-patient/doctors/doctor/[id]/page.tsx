@@ -220,7 +220,7 @@ export default function DoctorProfilePage() {
 
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="bg-main hover:bg-teal-600"
+                  className="bg-main hover:bg-main/90"
                   onClick={handleBookAppointment}
                   disabled={!doctor.available}
                 >

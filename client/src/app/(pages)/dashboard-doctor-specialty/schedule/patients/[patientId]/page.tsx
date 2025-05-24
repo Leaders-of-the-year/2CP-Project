@@ -169,7 +169,7 @@ const { token } = useAuth()
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -198,10 +198,10 @@ const { token } = useAuth()
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Patient Header */}
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-main to-main/90 p-6 text-white">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex items-center mb-4 md:mb-0">
-              <div className="w-16 h-16 rounded-full bg-white text-teal-600 flex items-center justify-center text-2xl font-bold mr-4">
+              <div className="w-16 h-16 rounded-full bg-white text-main/90 flex items-center justify-center text-2xl font-bold mr-4">
                 {patient.first_name.charAt(0)}
                 {patient.last_name.charAt(0)}
               </div>
@@ -257,7 +257,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <Activity className="h-5 w-5 mr-2 text-teal-500" />
+                    <Activity className="h-5 w-5 mr-2 text-main" />
                     Vital Signs
                   </CardTitle>
                 </CardHeader>
@@ -299,7 +299,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <Ruler className="h-5 w-5 mr-2 text-teal-500" />
+                    <Ruler className="h-5 w-5 mr-2 text-main" />
                     Physical Measurements
                   </CardTitle>
                 </CardHeader>
@@ -367,7 +367,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <Stethoscope className="h-5 w-5 mr-2 text-teal-500" />
+                    <Stethoscope className="h-5 w-5 mr-2 text-main" />
                     Chronic Conditions
                   </CardTitle>
                 </CardHeader>
@@ -420,7 +420,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <FileText className="h-5 w-5 mr-2 text-teal-500" />
+                    <FileText className="h-5 w-5 mr-2 text-main" />
                     Insurance Information
                   </CardTitle>
                 </CardHeader>
@@ -450,7 +450,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <Calendar className="h-5 w-5 mr-2 text-teal-500" />
+                    <Calendar className="h-5 w-5 mr-2 text-main" />
                     Next Appointment
                   </CardTitle>
                 </CardHeader>
@@ -476,7 +476,7 @@ const { token } = useAuth()
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium flex items-center">
-                    <User className="h-5 w-5 mr-2 text-teal-500" />
+                    <User className="h-5 w-5 mr-2 text-main" />
                     Additional Information
                   </CardTitle>
                 </CardHeader>
@@ -589,7 +589,7 @@ const { token } = useAuth()
                     {patient.prescriptions.map((prescription, index) => (
                       <div key={index} className="p-4 border rounded-lg bg-gray-50">
                         <div className="flex items-center mb-2">
-                          <Pill className="h-5 w-5 mr-2 text-teal-500" />
+                          <Pill className="h-5 w-5 mr-2 text-main" />
                           <h3 className="font-medium">{prescription.drug}</h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">

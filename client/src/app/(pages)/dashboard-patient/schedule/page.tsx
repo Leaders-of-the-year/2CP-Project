@@ -376,7 +376,7 @@ export default function PatientSchedulePage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -387,7 +387,7 @@ export default function PatientSchedulePage() {
         <h1 className="text-2xl font-bold">My Appointments</h1>
         <Button 
           onClick={() => setNewAppointmentModalOpen(true)}
-          className="bg-teal-500 hover:bg-teal-600"
+          className="bg-main hover:bg-main/90"
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           New Appointment
@@ -397,22 +397,22 @@ export default function PatientSchedulePage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <Tabs defaultValue="all" onValueChange={handleFilterChange} className="w-full md:w-auto">
           <TabsList className="bg-gray-100">
-            <TabsTrigger value="all" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="all" className="data-[state=active]:bg-main data-[state=active]:text-white">
               All
             </TabsTrigger>
-            <TabsTrigger value="upcoming" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="upcoming" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Upcoming
             </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="completed" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Completed
             </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="cancelled" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Cancelled
             </TabsTrigger>
-            <TabsTrigger value="emergency" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="emergency" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Emergency
             </TabsTrigger>
-            <TabsTrigger value="by-date" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="by-date" className="data-[state=active]:bg-main data-[state=active]:text-white">
               By Date
             </TabsTrigger>
           </TabsList>
@@ -616,7 +616,7 @@ export default function PatientSchedulePage() {
             </DialogClose>
             <Button
               type="button"
-              className="bg-teal-500 hover:bg-teal-600 text-white"
+              className="bg-main hover:bg-main/90 text-white"
               onClick={handleCreateAppointment}
               disabled={createAppointmentMutation.isPending || !newAppointmentForm.doctor_id || !newAppointmentForm.appointment_date || !newAppointmentForm.reason}
             >
@@ -670,7 +670,7 @@ export default function PatientSchedulePage() {
             </DialogClose>
             <Button
               type="button"
-              className="bg-teal-500 hover:bg-teal-600 text-white"
+              className="bg-main hover:bg-main/90 text-white"
               onClick={handleRescheduleSubmit}
               disabled={rescheduleMutation.isPending || !newAppointmentDate}
             >

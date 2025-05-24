@@ -228,7 +228,7 @@ export default function DoctorSchedulePage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -248,16 +248,16 @@ export default function DoctorSchedulePage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <Tabs defaultValue="all" onValueChange={handleFilterChange} className="w-full md:w-auto">
           <TabsList className="bg-gray-100">
-            <TabsTrigger value="all" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="all" className="data-[state=active]:bg-main data-[state=active]:text-white">
               All
             </TabsTrigger>
-            <TabsTrigger value="scheduled" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="scheduled" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Scheduled
             </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="cancelled" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Cancelled
             </TabsTrigger>
-            <TabsTrigger value="emergency" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="emergency" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Emergency
             </TabsTrigger>
           </TabsList>
@@ -343,7 +343,7 @@ export default function DoctorSchedulePage() {
                     <div className="mt-4 flex gap-2">
                       <Button
                         size="sm"
-                        className="bg-teal-500 hover:bg-teal-600 text-xs flex items-center gap-1"
+                        className="bg-main hover:bg-main/90 text-xs flex items-center gap-1"
                         onClick={() => handleViewPatient(appointment.patient_id)}
                       >
                         <User className="h-3 w-3" /> View Patient
@@ -417,7 +417,7 @@ export default function DoctorSchedulePage() {
             <Button
               onClick={handleRescheduleSubmit}
               disabled={rescheduleMutation.isPending}
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-main hover:bg-main/90"
             >
               {rescheduleMutation.isPending ? "Rescheduling..." : "Reschedule"}
             </Button>

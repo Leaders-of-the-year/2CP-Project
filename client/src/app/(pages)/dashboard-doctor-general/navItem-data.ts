@@ -9,11 +9,7 @@ export const navItems = [
       icon: "/Scheduled.svg",
       url: "/dashboard-doctor-general/scheduled",
     },
-    {
-      title: "Settings",
-      icon: "/Settings.svg",
-      url: "/settings",
-    },
+   
 
     {
       title: "My Patients",

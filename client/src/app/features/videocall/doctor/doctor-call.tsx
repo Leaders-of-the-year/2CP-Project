@@ -317,7 +317,7 @@ export default function Doctor() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100 ">
                   <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">
+                <Badge className="absolute bottom-4 left-4 bg-main/90 text-white px-3 py-1">
                   Dr Giraffe
                 </Badge>
               </div>
@@ -327,7 +327,7 @@ export default function Doctor() {
                 <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
                   <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                 </div>
-                <Badge className="absolute bottom-4 left-4 bg-teal-600 text-white px-3 py-1">
+                <Badge className="absolute bottom-4 left-4 bg-main/90 text-white px-3 py-1">
                   You
                 </Badge>
               </div>
@@ -340,7 +340,7 @@ export default function Doctor() {
               <p className="text-white font-medium mb-4">Patient waiting: {waitingPatientId}</p>
               <Button 
                 onClick={acceptPatient} 
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-main/90 hover:bg-teal-700 text-white"
               >
                 Accept Patient
               </Button>

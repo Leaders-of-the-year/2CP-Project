@@ -210,7 +210,7 @@ export default function DoctorSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -244,11 +244,11 @@ export default function DoctorSettingsPage() {
             </div>
             <div className="flex items-center gap-3">
               <Badge
-                className={
+                className={`${
                   availabilityStatus
-                    ? "bg-green-100 text-green-800 hover:bg-green-100"
-                    : "bg-red-100 text-red-800 hover:bg-red-100"
-                }
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-red-500 text-white hover:bg-red-600"
+                }`}
               >
                 {availabilityStatus ? "Available" : "Not Available"}
               </Badge>
@@ -278,7 +278,7 @@ export default function DoctorSettingsPage() {
           <CardContent className="space-y-6">
             {/* Personal Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-teal-600 font-medium">
+              <div className="flex items-center gap-2 text-main/90 font-medium">
                 <User size={18} />
                 <h3>Personal Details</h3>
               </div>
@@ -329,7 +329,7 @@ export default function DoctorSettingsPage() {
 
             {/* Professional Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-teal-600 font-medium">
+              <div className="flex items-center gap-2 text-main/90 font-medium">
                 <Briefcase size={18} />
                 <h3>Professional Details</h3>
               </div>
@@ -371,7 +371,7 @@ export default function DoctorSettingsPage() {
 
             {/* Address Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-teal-600 font-medium">
+              <div className="flex items-center gap-2 text-main/90 font-medium">
                 <MapPin size={18} />
                 <h3>Address Information</h3>
               </div>
@@ -427,7 +427,7 @@ export default function DoctorSettingsPage() {
             </Button>
             <Button
               type="submit"
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-main hover:bg-main/90"
               disabled={!isFormDirty || updateProfileMutation.isPending}
             >
               {updateProfileMutation.isPending ? (

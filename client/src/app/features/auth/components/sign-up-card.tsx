@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/app/providers"
 import { SERVER_URL } from "../../../../../config"
+import Link from "next/link"
+
 // Define the steps in the sign-up process
 type Step = "userType" | "details" | "terms"
 
@@ -348,7 +350,7 @@ export default function SignUpForm() {
                   <div className="flex items-center border rounded-md px-4 py-3 w-full">
                     <RadioGroupItem value="doctor_specialty" id="doctor_specialty" />
                     <Label htmlFor="doctor_specialty" className="ml-2 flex items-center gap-2">
-                      <Stethoscope size={16} className="text-teal-600" />
+                      <Stethoscope size={16} className="text-main/90" />
                       <span>Specialist Doctor</span>
                     </Label>
                   </div>
@@ -356,7 +358,7 @@ export default function SignUpForm() {
                   <div className="flex items-center border rounded-md px-4 py-3 w-full">
                     <RadioGroupItem value="doctor_general" id="doctor_general" />
                     <Label htmlFor="doctor_general" className="ml-2 flex items-center gap-2">
-                      <Stethoscope size={16} className="text-teal-600" />
+                      <Stethoscope size={16} className="text-main/90" />
                       <span>General Doctor</span>
                     </Label>
                   </div>
@@ -364,11 +366,21 @@ export default function SignUpForm() {
                   <div className="flex items-center border rounded-md px-4 py-3 w-full">
                     <RadioGroupItem value="patient" id="patient" />
                     <Label htmlFor="patient" className="ml-2 flex items-center gap-2">
-                      <User size={16} className="text-teal-600" />
+                      <User size={16} className="text-main/90" />
                       <span>Patient</span>
                     </Label>
                   </div>
                 </RadioGroup>
+              </div>
+
+              {/* Navigation to Sign In - Only show on first step */}
+              <div className="text-center">
+                <p className="text-slate-600 text-sm">
+                  Already have an account?{" "}
+                  <Link href="/login" className="text-main/90 hover:text-teal-700 font-medium hover:underline">
+                    Sign in here
+                  </Link>
+                </p>
               </div>
             </div>
           )}
@@ -376,7 +388,7 @@ export default function SignUpForm() {
           {/* Details Step */}
           {currentStep === "details" && (
             <div className="space-y-6">
-              <div className="flex items-center text-teal-600 gap-2">
+              <div className="flex items-center text-main/90 gap-2">
                 {formData.type.includes("doctor") ? <Stethoscope size={18} /> : <User size={18} />}
                 <span>
                   {formData.type === "doctor_specialty"
@@ -741,7 +753,7 @@ export default function SignUpForm() {
               onClick={handleSubmit}
               disabled={!isStepValid() || signUpMutation.isPending}
               className={cn(
-                "w-full bg-teal-600 hover:bg-teal-700 text-white",
+                "w-full bg-main/90 hover:bg-teal-700 text-white",
                 (!isStepValid() || signUpMutation.isPending) && "opacity-70 cursor-not-allowed",
               )}
             >

@@ -97,7 +97,7 @@ export default function DoctorSpecialtyProfilePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -117,7 +117,7 @@ export default function DoctorSpecialtyProfilePage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-xl text-gray-500 mb-4">specialist doctor profile</h1>
+      <h1 className="text-3xl text-black font-bold mb-4">My profile</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Card */}
@@ -146,13 +146,12 @@ export default function DoctorSpecialtyProfilePage() {
                   <Star key={i} size={16} className={i < (profile.rating || 4) ? "fill-current" : "text-gray-300"} />
                 ))}
             </div>
-            <Button className="bg-teal-500 hover:bg-teal-600 w-full mb-4">
-              <Edit size={16} className="mr-2" />
+            <Button className="bg-main hover:bg-main/90 w-60 mb-4 h-12 rounded-2xl">
+              <Edit size={16} className="mr-2 h2" />
               Edit Profile
             </Button>
           </CardContent>
         </Card>
-
         {/* Professional Info */}
         <Card className="bg-gray-100 shadow-sm md:col-span-2">
           <CardContent className="p-6">
@@ -163,7 +162,7 @@ export default function DoctorSpecialtyProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <Stethoscope className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Stethoscope className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Doctor Number</p>
                     <p className="text-gray-600">{profile.doctor_number}</p>
@@ -171,7 +170,7 @@ export default function DoctorSpecialtyProfilePage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Heart className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Heart className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Specialty</p>
                     <p className="text-gray-600">{profile.specialty_name}</p>
@@ -179,7 +178,7 @@ export default function DoctorSpecialtyProfilePage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Briefcase className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Briefcase className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Experience</p>
                     <p className="text-gray-600">{profile.years_of_experience} years</p>
@@ -189,7 +188,7 @@ export default function DoctorSpecialtyProfilePage() {
 
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <Mail className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Mail className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Email</p>
                     <p className="text-gray-600">{profile.email}</p>
@@ -197,7 +196,7 @@ export default function DoctorSpecialtyProfilePage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Phone className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Phone className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Phone</p>
                     <p className="text-gray-600">{profile.phone_number || "Not provided"}</p>
@@ -205,7 +204,7 @@ export default function DoctorSpecialtyProfilePage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Globe className="h-5 w-5 text-teal-500 mt-0.5 mr-3" />
+                  <Globe className="h-5 w-5 text-main mt-0.5 mr-3" />
                   <div>
                     <p className="font-medium">Language</p>
                     <p className="text-gray-600">{profile.preferred_language}</p>
@@ -240,7 +239,7 @@ export default function DoctorSpecialtyProfilePage() {
                     <p className="text-gray-500">Patients</p>
                     <p className="text-2xl font-bold">{profile.patients_count || 85}</p>
                   </div>
-                  <Users className="h-10 w-10 text-teal-500" />
+                  <Users className="h-10 w-10 text-main" />
                 </div>
               </div>
 
@@ -250,7 +249,7 @@ export default function DoctorSpecialtyProfilePage() {
                     <p className="text-gray-500">Experience</p>
                     <p className="text-2xl font-bold">{profile.years_of_experience} yrs</p>
                   </div>
-                  <Calendar className="h-10 w-10 text-teal-500" />
+                  <Calendar className="h-10 w-10 text-main" />
                 </div>
               </div>
 
@@ -359,7 +358,7 @@ export default function DoctorSpecialtyProfilePage() {
                   ).map((publication, index) => (
                     <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
                       <div className="flex items-start">
-                        <BookOpen className="h-5 w-5 text-teal-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <BookOpen className="h-5 w-5 text-main mt-0.5 mr-3 flex-shrink-0" />
                         <div>
                           <p className="font-medium">{publication.title}</p>
                           <p className="text-gray-600">

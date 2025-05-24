@@ -143,7 +143,7 @@ console.log("Weight:", weight);
       </div>
 
       <div className="mt-6 flex justify-end">
-        <Button className="bg-teal-600 hover:bg-teal-700">Start Now</Button>
+        <Button className="bg-main/90 hover:bg-teal-700">Start Now</Button>
       </div>
     </div>
   )

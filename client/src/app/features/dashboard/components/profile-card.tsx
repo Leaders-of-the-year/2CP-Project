@@ -16,7 +16,7 @@ export function ProfileCard({ name, age, imageUrl }: ProfileCardProps) {
         </div>
         <h2 className="text-xl font-bold">{name}</h2>
         <p className="text-gray-500">Age: {age}</p>
-        <Button className="mt-4 bg-teal-600 hover:bg-teal-700">Update</Button>
+        <Button className="mt-4 bg-main/90 hover:bg-teal-700">Update</Button>
       </CardContent>
     </Card>
   )

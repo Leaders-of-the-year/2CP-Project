@@ -356,7 +356,7 @@ export default function DoctorsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -371,13 +371,13 @@ export default function DoctorsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <Tabs defaultValue="all" onValueChange={handleFilterChange} className="w-full md:w-auto">
           <TabsList className="bg-gray-100">
-            <TabsTrigger value="all" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="all" className="data-[state=active]:bg-main data-[state=active]:text-white">
               All
             </TabsTrigger>
-            <TabsTrigger value="top-rating" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="top-rating" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Top rating
             </TabsTrigger>
-            <TabsTrigger value="a-z" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="a-z" className="data-[state=active]:bg-main data-[state=active]:text-white">
               A-Z
             </TabsTrigger>
           </TabsList>
@@ -416,7 +416,7 @@ export default function DoctorsPage() {
                 {/* Since we don't have ratings in the new structure, showing a random star rating between 1 and 5 */}
                 <div className="flex mb-1">
                   {[...Array(Math.floor(Math.random() * 5) + 1)].map((_, i) => (
-                    <Star key={i} size={16} className="text-teal-500 fill-teal-500" />
+                    <Star key={i} size={16} className="text-main fill-main" />
                   ))}
                 </div>
 
@@ -465,7 +465,7 @@ export default function DoctorsPage() {
             <DialogTitle className="text-center text-xl">Schedule an Appointment</DialogTitle>
             <DialogDescription className="text-center">
               {selectedDoctor && (
-                <span className="font-medium text-teal-600">
+                <span className="font-medium text-main/90">
                   Dr. {selectedDoctor.first_name} {selectedDoctor.last_name} • {selectedDoctor.specialty_name}
                 </span>
               )}
@@ -552,7 +552,7 @@ export default function DoctorsPage() {
                 <Button
                   type="button"
                   className={`${
-                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-teal-500 hover:bg-teal-600"
+                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-main hover:bg-main/90"
                   } text-white`}
                   onClick={handleSubmitAppointment}
                   disabled={submitting || !appointmentData.appointment_date || !appointmentData.reason}
@@ -578,7 +578,7 @@ export default function DoctorsPage() {
                 <Button
                   type="button"
                   className={`${
-                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-teal-500 hover:bg-teal-600"
+                    appointmentData.emergency ? "bg-red-600 hover:bg-red-700" : "bg-main hover:bg-main/90"
                   } text-white`}
                 >
                   Close

@@ -13,7 +13,7 @@ export function PatientRecords({ records }: PatientRecordsProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case "blood":
-        return <FileText className="h-6 w-6 text-teal-500" />
+        return <FileText className="h-6 w-6 text-main" />
       case "heart":
         return <Heart className="h-6 w-6 text-red-500" />
       case "xray":

@@ -120,7 +120,7 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-gray-500 mt-1">Manage your account preferences and settings</p>
         </div>
-        <Button onClick={handleSaveSettings} className="bg-teal-600 hover:bg-teal-700 text-white">
+        <Button onClick={handleSaveSettings} className="bg-main/90 hover:bg-teal-700 text-white">
           <Save className="mr-2 h-4 w-4" />
           Save Changes
         </Button>
@@ -548,7 +548,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.theme === "light" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.theme === "light" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("theme", "light")}
                       >
@@ -560,7 +560,7 @@ export default function SettingsPage() {
 
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.theme === "dark" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.theme === "dark" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("theme", "dark")}
                       >
@@ -572,7 +572,7 @@ export default function SettingsPage() {
 
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.theme === "system" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.theme === "system" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("theme", "system")}
                       >
@@ -593,7 +593,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.fontSize === "small" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.fontSize === "small" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("fontSize", "small")}
                       >
@@ -602,7 +602,7 @@ export default function SettingsPage() {
 
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.fontSize === "medium" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.fontSize === "medium" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("fontSize", "medium")}
                       >
@@ -611,7 +611,7 @@ export default function SettingsPage() {
 
                       <div
                         className={`border rounded-lg p-4 cursor-pointer ${
-                          appearanceSettings.fontSize === "large" ? "border-teal-500 bg-teal-50" : "border-gray-200"
+                          appearanceSettings.fontSize === "large" ? "border-main bg-teal-50" : "border-gray-200"
                         }`}
                         onClick={() => handleAppearanceChange("fontSize", "large")}
                       >

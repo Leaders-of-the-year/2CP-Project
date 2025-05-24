@@ -135,7 +135,7 @@ export default function DoctorGeneralProfilePage() {
               <MapPin size={16} className="mr-1" />
               <span>{profile.state}</span>
             </div>
-            <Button className="bg-main hover:bg-teal-600 w-full mb-4">
+            <Button className="bg-main hover:bg-main/90 w-60 mb-4 h-12 rounded-2xl">
               <Edit size={16} className="mr-2" />
               Edit Profile
             </Button>

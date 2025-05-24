@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/app/providers"
 import { toast } from "@/hooks/use-toast"
 import { SERVER_URL } from "../../../../../config"
+import Link from "next/link"
+
 interface SignInCredentials {
   email: string
   password: string
@@ -44,7 +46,6 @@ export default function SignInForm() {
       return response.json()
     },
     onSuccess: (data) => {
-
       login(data.token, data.user)
 
       toast({
@@ -81,7 +82,7 @@ export default function SignInForm() {
         <h1 className="text-3xl font-semibold text-center mb-8 text-slate-800">Sign in</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-teal-600 font-medium">
+            <Label htmlFor="email" className="text-main/90 font-medium">
               Email
             </Label>
             <Input
@@ -96,7 +97,7 @@ export default function SignInForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-teal-600 font-medium">
+            <Label htmlFor="password" className="text-main/90 font-medium">
               Password
             </Label>
             <Input
@@ -110,7 +111,7 @@ export default function SignInForm() {
               required
             />
             <div className="text-right">
-              <a href="#" className="text-teal-600 text-sm hover:underline">
+              <a href="#" className="text-main/90 text-sm hover:underline">
                 Forgot password?
               </a>
             </div>
@@ -125,7 +126,7 @@ export default function SignInForm() {
           <Button
             type="submit"
             className={cn(
-              "w-full bg-teal-600 hover:bg-teal-700 text-white",
+              "w-full bg-main/90 hover:bg-teal-700 text-white",
               signInMutation.isPending && "opacity-70 cursor-not-allowed",
             )}
             disabled={signInMutation.isPending}
@@ -133,6 +134,16 @@ export default function SignInForm() {
             {signInMutation.isPending ? "Signing in..." : "Continue"}
           </Button>
         </form>
+
+        {/* Navigation to Sign Up */}
+        <div className="mt-6 text-center">
+          <p className="text-slate-600 text-sm">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-main/90 hover:text-teal-700 font-medium hover:underline">
+              Sign up here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

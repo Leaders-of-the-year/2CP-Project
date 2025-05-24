@@ -117,7 +117,7 @@ export default function WaitingPatientsPage() {
                         <div key={patientId} className="grid grid-cols-12 gap-4 p-4 items-center">
                           <div className="col-span-4 flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center">
-                              <User className="h-4 w-4 text-teal-600" />
+                              <User className="h-4 w-4 text-main/90" />
                             </div>
                             <div className="font-medium">{patientId.substring(0, 8)}</div>
                           </div>
@@ -133,7 +133,7 @@ export default function WaitingPatientsPage() {
                           <div className="col-span-2 text-right">
                             <Button
                               onClick={() => handleAcceptPatient(patientId)}
-                              className="bg-teal-600 hover:bg-teal-700 text-white"
+                              className="bg-main/90 hover:bg-teal-700 text-white"
                             >
                               Accept
                             </Button>

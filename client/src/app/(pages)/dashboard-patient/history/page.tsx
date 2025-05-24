@@ -152,7 +152,7 @@ export default function HistoryPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-main border-t-transparent"></div>
       </div>
     )
   }
@@ -208,13 +208,13 @@ export default function HistoryPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <Tabs defaultValue="all" onValueChange={handleFilterChange} className="w-full md:w-auto">
           <TabsList className="bg-gray-100">
-            <TabsTrigger value="all" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="all" className="data-[state=active]:bg-main data-[state=active]:text-white">
               All
             </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="completed" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Completed
             </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">
+            <TabsTrigger value="cancelled" className="data-[state=active]:bg-main data-[state=active]:text-white">
               Cancelled
             </TabsTrigger>
           </TabsList>
