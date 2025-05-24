@@ -33,7 +33,7 @@ const BoxWithEdges = ({ position, color = "#374B52" }) => {
 }
 
 const MedicalSymbol = ({ position }) => {
-  const group = useRef()
+  const group = useRef<THREE.Group>(null)
 
   // Create a plus symbol (medical cross)
   const plusShape = [
@@ -60,7 +60,7 @@ const MedicalSymbol = ({ position }) => {
 }
 
 const VideoCallSymbol = ({ position }) => {
-  const group = useRef()
+  const group = useRef<THREE.Group>(null)
 
   // Create a camera-like symbol
   const cameraShape = [
@@ -87,7 +87,7 @@ const VideoCallSymbol = ({ position }) => {
 }
 
 const MedicalScene = () => {
-  const orbitControlsRef = useRef()
+  const orbitControlsRef = useRef(null)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   useEffect(() => {

@@ -137,7 +137,12 @@ console.log("Weight:", weight);
         />
 
         <div className="flex flex-col gap-6">
-          <PatientRecords records={userData.records} />
+          <PatientRecords
+            records={userData.records.map((record: any) => ({
+              type: record.type as "blood" | "heart" | "xray",
+              date: record.date,
+            }))}
+          />
           <Prescriptions prescriptions={userData.prescriptions} />
         </div>
       </div>

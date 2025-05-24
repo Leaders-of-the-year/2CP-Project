@@ -25,7 +25,7 @@ export default function Home() {
         }))} 
         
         </div>
-        <Button  size="custom" className='buttonL' >Get started</Button>
+        <Button  size="lg" className='buttonL' >Get started</Button>
 
       </div>
       <div className="flex items-center justify-center w-1/2 h-[80vh] border-inherit  rounded-bl-[64px] bg-custom-gradient">

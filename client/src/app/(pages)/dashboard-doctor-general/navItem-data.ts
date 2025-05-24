@@ -22,3 +22,4 @@ export const navItems = [
       url: "/dashboard-doctor-general/profile",
     },
   ]
+  

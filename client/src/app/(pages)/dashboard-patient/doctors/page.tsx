@@ -113,9 +113,7 @@ export default function DoctorsPage() {
     enabled: !!token, // Only run query if token exists
     retry: 1,
     // Fallback data for when the query fails
-    onError: (err) => {
-      console.error("Error fetching doctors:", err)
-    },
+    // Handle errors inside the query function or globally using queryClient
   })
 
   // Fallback data for demo purposes
