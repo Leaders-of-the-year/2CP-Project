@@ -140,7 +140,7 @@ console.log("Weight:", weight);
           <PatientRecords
             records={userData.records.map((record: any) => ({
               type: record.type as "blood" | "heart" | "xray",
-              date: record.date,s
+              date: record.date
             }))}
           />
           <Prescriptions prescriptions={userData.prescriptions} />
