@@ -244,11 +244,13 @@ export default function DoctorSettingsPage() {
             </div>
             <div className="flex items-center gap-3">
               <Badge
-                className={`${
+                className={
                   availabilityStatus
-                    ? "bg-green-500 text-white hover:bg-green-600"
-                    : "bg-red-500 text-white hover:bg-red-600"
-                }`}
+  
+  
+                  ? "bg-green-100 text-green-800 hover:bg-green-100"
+                    : "bg-red-100 text-red-800 hover:bg-red-100"
+                }
               >
                 {availabilityStatus ? "Available" : "Not Available"}
               </Badge>
@@ -278,7 +280,7 @@ export default function DoctorSettingsPage() {
           <CardContent className="space-y-6">
             {/* Personal Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-main/90 font-medium">
+              <div className="flex items-center gap-2 text-teal-600 font-medium">
                 <User size={18} />
                 <h3>Personal Details</h3>
               </div>
@@ -329,7 +331,7 @@ export default function DoctorSettingsPage() {
 
             {/* Professional Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-main/90 font-medium">
+              <div className="flex items-center gap-2 text-teal-600 font-medium">
                 <Briefcase size={18} />
                 <h3>Professional Details</h3>
               </div>
@@ -371,7 +373,7 @@ export default function DoctorSettingsPage() {
 
             {/* Address Information */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-main/90 font-medium">
+              <div className="flex items-center gap-2 text-teal-600 font-medium">
                 <MapPin size={18} />
                 <h3>Address Information</h3>
               </div>
@@ -427,7 +429,7 @@ export default function DoctorSettingsPage() {
             </Button>
             <Button
               type="submit"
-              className="bg-main hover:bg-main/90"
+              className="bg-main hover:bg-teal-600"
               disabled={!isFormDirty || updateProfileMutation.isPending}
             >
               {updateProfileMutation.isPending ? (
